@@ -26,3 +26,10 @@
 - Load legacy entry settings from the combined entry data/options map.
 - Guard internal navigation during component updates rather than rendering.
 - Add unexecuted validation regression tests.
+
+
+## Unreleased — frontend modes and source checks (2026-10-10)
+
+- Replaced legacy redirect shell with direct iframe handling.
+- New-window mode uses an explicit link to avoid pop-up blockers.
+- Added GitHub Actions syntax/JSON/source regression checks; outcomes not yet confirmed.
