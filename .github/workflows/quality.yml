@@ -145,7 +145,7 @@ jobs:
           HA_TEST_PLUGIN_SOURCE: ${{ runner.temp }}/panel-iframe-original/custom_components/panel_iframe
           HA_UPGRADE_FILE: ${{ runner.temp }}/original-panel-iframe-store.json
           PYTEST_ADDOPTS: "--asyncio-mode=auto"
-        run: python -m pytest -q tests/integration/test_upstream_source_swap.py --disable-warnings -x
+        run: timeout 120s python -m pytest -q tests/integration/test_upstream_source_swap.py --disable-warnings -x
       - name: Process B - fork source loads the saved original entry
         env:
           HA_UPGRADE_PHASE: fork
