@@ -435,3 +435,65 @@ async def test_non_admin_backup_restore_is_forbidden(hass, hass_ws_client):
     })
     response = await ws.receive_json()
     assert not response["success"], response
+
+
+@pytest.mark.asyncio
+async def test_restore_creates_missing_entry_and_reimport_skips_duplicate(hass, hass_ws_client):
+    """Cross-instance backup import creates a missing menu without inventing an entry ID."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    bootstrap = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager",
+        data={"manager_only": True}, entry_id="bootstrap-cross-import",
+    )
+    bootstrap.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(bootstrap.entry_id)
+    await hass.async_block_till_done()
+
+    ws = await hass_ws_client(hass)
+    empty = {
+        "format": "ha-sidebar-manager", "version": 1,
+        "exported_at": "2026-10-10T00:00:00+00:00", "items": [],
+    }
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": empty,
+    })
+    check = await ws.receive_json()
+    assert check["success"] and check["result"]["plan"] == [], check
+
+    imported = {
+        **empty,
+        "items": [{
+            "entry_id": "original-instance-only-id",
+            "title": "设备与服务", "url": "/config/integrations",
+            "icon": "mdi:devices", "mode": "3", "enabled": True,
+            "require_admin": True, "menu_order": 0,
+        }],
+    }
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": imported,
+    })
+    preview = await ws.receive_json()
+    assert preview["success"] and preview["result"]["counts"]["create"] == 1
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore",
+        "backup": imported, "apply": True,
+    })
+    result = await ws.receive_json()
+    assert result["success"] and result["result"]["applied"], result
+    await hass.async_block_till_done()
+    entries = [
+        x for x in hass.config_entries.async_entries(DOMAIN)
+        if not x.data.get("manager_only")
+    ]
+    assert len(entries) == 1
+    assert entries[0].title == "设备与服务"
+    assert entries[0].entry_id != "original-instance-only-id"
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": imported,
+    })
+    preview = await ws.receive_json()
+    assert preview["success"] and preview["result"]["counts"] == {
+        "create": 0, "update": 0, "skip": 1,
+    }, preview
