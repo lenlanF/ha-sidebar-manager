@@ -120,6 +120,30 @@ async function main() {
   assert.equal(ui.shadowRoot.querySelector(".entry img"), null);
   assert.ok(ui.shadowRoot.querySelector(".entry strong").textContent.includes("<img"));
 
+  // The original integration can leave title-only entries without a URL.
+  // They should stay editable, but new menus must still require a target.
+  entries = [{
+    entry_id:"legacy-empty", title:"未配置旧菜单", url:"",
+    icon:"mdi:link", mode:"0", require_admin:false,
+    enabled:true, menu_order:0,
+  }];
+  button("refresh").click();
+  await tick();
+  button("edit").click();
+  assert.equal(ui.shadowRoot.querySelector("#url").required, false,
+    "editing a legacy unconfigured entry must not require a URL");
+  ui.shadowRoot.querySelector("#title").value = "重命名未配置菜单";
+  ui.shadowRoot.querySelector("form").dispatchEvent(
+    new win.Event("submit", {bubbles:true,cancelable:true})
+  );
+  await tick();
+  assert.equal(entries[0].title, "重命名未配置菜单");
+  assert.equal(entries[0].url, "");
+  button("add").click();
+  assert.equal(ui.shadowRoot.querySelector("#url").required, true,
+    "creating a new menu must require a URL");
+  button("cancel").click();
+
   win.close();
   console.log("Visual manager DOM create/edit/delete/failure/escaping: OK");
 }
