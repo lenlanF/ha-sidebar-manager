@@ -32,6 +32,10 @@ jobs:
           node --check custom_components/panel_iframe/www/panel_iframe.js
           node --check custom_components/panel_iframe/www/manager.js
           node tests/test_frontend_panel.cjs
+      - name: Install DOM testing dependency
+        run: npm install --no-save --no-package-lock jsdom@26
+      - name: Exercise sidebar manager DOM behaviors
+        run: node tests/test_manager_ui.cjs
       - name: Install targeted test dependencies
         run: pip install pytest voluptuous
       - name: Run config validation tests with HA stubs
