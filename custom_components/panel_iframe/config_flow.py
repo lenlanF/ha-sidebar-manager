@@ -24,7 +24,9 @@ def _fields(defaults: dict[str, Any], *, include_title: bool) -> vol.Schema:
     return vol.Schema(fields)
 
 
-def _validate(data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, str]]:
+def _validate(
+    data: dict[str, Any], *, allow_unconfigured: bool = False
+) -> tuple[dict[str, Any], dict[str, str]]:
     values = dict(data)
     errors: dict[str, str] = {}
     if "title" in values:
@@ -32,18 +34,18 @@ def _validate(data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, str]]:
         if not values["title"]:
             errors["title"] = "required"
     values["url"] = values["url"].strip()
-    if not values["url"]:
+    if not values["url"] and not allow_unconfigured:
         errors["url"] = "required"
     values["icon"] = values["icon"].strip().replace("mdi-", "mdi:", 1)
     if not values["icon"]:
         errors["icon"] = "required"
-    if values["mode"] == "3" and (
+    if values["url"] and values["mode"] == "3" and (
         not values["url"].startswith("/")
         or values["url"].startswith("//")
         or "\\" in values["url"]
     ):
         errors["url"] = "invalid_internal_path"
-    if values["mode"] != "3" and not (
+    if values["url"] and values["mode"] != "3" and not (
         values["url"].startswith(("http://", "https://", "/"))
         or values["url"].isdigit()
         or values["url"].startswith(":")
@@ -83,7 +85,13 @@ class SidebarConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_item(self, user_input: dict[str, Any] | None = None):
         """Preserve the legacy one-entry-per-menu format."""
         if user_input is not None:
-            values, errors = _validate(user_input)
+            # Internal JSON restore can recreate old menus whose URL was never set.
+            # Do not expose this exception in the normal add-item form.
+            restore_unconfigured = user_input.get("restore_unconfigured") is True
+            values, errors = _validate(
+                {k: v for k, v in user_input.items() if k != "restore_unconfigured"},
+                allow_unconfigured=restore_unconfigured,
+            )
             if not errors:
                 title = values.pop("title")
                 return self.async_create_entry(title=title, data=values)
@@ -106,7 +114,10 @@ class SidebarOptionsFlow(OptionsFlow):
         if self.config_entry.data.get("manager_only"):
             return self.async_abort(reason="manage_in_sidebar")
         if user_input is not None:
-            values, errors = _validate(user_input)
+            prior = {**self.config_entry.data, **self.config_entry.options}
+            values, errors = _validate(
+                user_input, allow_unconfigured=not prior.get("url")
+            )
             if not errors:
                 # Keep unrelated upstream options so editing an old menu does not
                 # erase metadata unknown to this release. Unsafe proxy is always off.
