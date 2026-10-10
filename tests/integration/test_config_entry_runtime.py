@@ -686,3 +686,25 @@ async def test_upstream_options_flow_can_edit_old_entry(hass):
     assert entry.options["url"] == "/config/integrations"
     assert entry.options["proxy_access"] is False
     assert entry.data["old_data"] == "preserved"
+
+
+@pytest.mark.asyncio
+async def test_manager_javascript_is_served_by_real_ha_http(hass, hass_client):
+    """Registered frontend resources must actually be retrievable over HA HTTP."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    bootstrap = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager",
+        data={"manager_only": True}, entry_id="manager-http-resources",
+    )
+    bootstrap.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(bootstrap.entry_id)
+    await hass.async_block_till_done()
+    client = await hass_client()
+    for file_name, expected in (
+        ("manager.js", "ha-sidebar-manager-panel"),
+        ("panel_iframe.js", "ha-panel_iframe"),
+    ):
+        response = await client.get(f"/panel_iframe_www/{file_name}")
+        assert response.status == 200, (file_name, response.status)
+        content = await response.text()
+        assert expected in content
