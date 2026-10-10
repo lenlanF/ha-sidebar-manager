@@ -29,7 +29,7 @@
     ".primary{background:var(--primary-color);color:white;border-color:var(--primary-color);font-weight:600}",
     ".primary:hover:not(:disabled){filter:brightness(.94);background:var(--primary-color)}",
     ".danger{color:var(--error-color,#c62828)}",
-    ".card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:17px;margin:11px 0;display:flex;align-items:center;gap:15px;min-width:0}",
+    ".entry[hidden]{display:none}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:17px;margin:11px 0;display:flex;align-items:center;gap:15px;min-width:0}",
     ".glyph{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--secondary-background-color);flex:none;color:var(--primary-color)}",
     ".info{flex:1;min-width:0}",
     ".info strong{display:block;font-size:16px;margin-bottom:4px;overflow-wrap:anywhere}",
@@ -64,6 +64,7 @@
       this._notice = "";
       this._showForm = false;
       this._editing = null;
+      this._draft = null;
       this._search = "";
       this.shadowRoot.addEventListener("click", (event) => this._onClick(event));
       this.shadowRoot.addEventListener("submit", (event) => this._onSubmit(event));
@@ -116,7 +117,7 @@
 
     _formHTML() {
       if (!this._showForm) return "";
-      const item = this._editing || {};
+      const item = this._draft || this._editing || {};
       const selected = String(item.mode ?? "3");
       return '<form id="editor"><h3>' + (item.entry_id ? "编辑菜单" : "新增菜单") + '</h3>'
         + '<div class="fields"><div><label for="title">显示名称</label>'
@@ -178,6 +179,7 @@
       if (action === "refresh") return this._refresh();
       if (action === "add") {
         this._editing = null;
+        this._draft = null;
         this._showForm = true;
         this._error = "";
         return this._render();
@@ -185,10 +187,12 @@
       if (action === "cancel") {
         this._showForm = false;
         this._editing = null;
+        this._draft = null;
         return this._render();
       }
       if (action === "edit") {
         this._editing = this._entries.find(item => item.entry_id === entryId);
+        this._draft = null;
         this._showForm = Boolean(this._editing);
         return this._render();
       }
@@ -221,6 +225,7 @@
         require_admin: form.elements.namedItem("require_admin").checked
       };
       if (this._editing?.entry_id) payload.entry_id = this._editing.entry_id;
+      this._draft = payload;
       await this._mutate("save", payload, "菜单已保存");
     }
 
@@ -233,6 +238,7 @@
         await this._send(action, payload);
         this._showForm = false;
         this._editing = null;
+        this._draft = null;
         this._entries = await this._send("list");
         this._loaded = true;
         this._notice = notice;
