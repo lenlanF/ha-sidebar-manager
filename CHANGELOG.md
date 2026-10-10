@@ -33,3 +33,15 @@
 - Replaced legacy redirect shell with direct iframe handling.
 - New-window mode uses an explicit link to avoid pop-up blockers.
 - Added GitHub Actions syntax/JSON/source regression checks; outcomes not yet confirmed.
+
+
+## Unreleased — visual manager, native CRUD and bootstrap
+
+- Added administrator-only visual management panel and WebSocket API for native sidebar ConfigEntries.
+- Added menu search, create/edit/delete, and management-list ordering controls.
+- Added first-run manager-only setup without requiring a dummy menu shortcut.
+- Added bilingual setup/option flows and legacy entry compatibility.
+- Added isolated CRUD coverage plus HA Core API import smoke (Python 3.14 for HA 2026.10).
+- Security: backend admin authorization and preserved disabling of unsafe wildcard HTTP proxy.
+
+**Not released:** live HA browser tests, packaging validation, migration rehearsals, native per-user sidebar order, drag/drop and custom user permissions remain outstanding.
