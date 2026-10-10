@@ -88,3 +88,11 @@
 - Add desktop/mobile Chromium export/restore scenarios and HA Core backup/migration/security tests.
 - Verification: **12/12 HA Core functional tests**, **2/2 Chromium browser tests** and **HACS 9/9** on commit `8f3c0aa7a`.
 - Full legacy HACS upgrade and real HA frontend testing remain release blockers.
+
+## Unreleased — 0.1.0-dev.4 (2026-10-10)
+
+- Added upstream 2026.4.13 configuration-layout compatibility fixture and real Core regression tests.
+- Verified legacy HA OptionsFlow edit path and HA HTTP serving of manager/panel JavaScript resources.
+- Fixed cross-instance menu restoration to update icon, permissions, enablement and order when title+URL matches.
+- Verification: 16/16 HA 2026.10 Core tests and Chromium desktop/mobile tests passed (run 38050016651).
+- HACS repository structure remains valid; live HACS source replacement, persistent restart and full frontend/Ingress test remain release blockers.

@@ -134,3 +134,15 @@
 - **Confirmed HACS 9/9 passed** on same code: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445.
 - Added `docs/UPGRADE_AND_ROLLBACK.md` with disposable-instance migration procedure and mandatory full HA backup. Menu-level restore is explicitly **non-atomic** and not a full HA software rollback.
 - Outstanding: actual upgrade of an already HACS-installed original `panel_iframe` in a disposable HA system, full live-HA frontend browsing, Ingress/CSP matrix, and production rollback rehearsals. **No main merge or release**.
+
+## 2026-10-10 — Verify original 2026.4.13 entry layout and HA HTTP resources (v0.1.0-dev.4)
+
+- Fetched and reviewed actual upstream `shaonianzhentan/panel_iframe` code at version 2026.4.13. Verified `ConfigFlow` creates entries with `data={"title":...}`, and `OptionsFlow` writes `icon`, `url`, `mode`, `require_admin`, and `proxy_access` into options.
+- Added a **sanitized representative upstream entry fixture**, `tests/fixtures/upstream_2026_4_13.json` (not a user backup, not actual HACS-installed state), and real HA Core regression verifying old entries load, original `data`/`options` survive, entries appear in manager list, and proxy settings are not executed. Legacy proxy is disabled intentionally; opening modes relying on it may behave differently.
+- Added native HA OptionsFlow migration test against old-style entries to ensure users can edit old shortcuts without recreating them, while preserving unknown legacy data.
+- Fixed cross-instance backup restoration: an entry matching title + URL now restores differing icon, admin restriction, enablement and order instead of being incorrectly skipped. Added HA Core integration regression for this behavior.
+- Added HA HTTP smoke test that fetches `manager.js` and `panel_iframe.js` via registered static paths, detecting missing runtime frontend assets.
+- Evidence: [GitHub Actions source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651) **16/16 actual HA 2026.10 Core tests passed**, Chromium desktop/mobile test jobs passed, API import and isolated/source checks passed.
+- Evidence: [HACS official validation](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016667) passed for code prior to this documentation/version bump; current development-branch version remains unreleased.
+- Not yet completed: real *in-place* upstream HACS repository swap, saved HA configuration across a process restart, browser using real HA frontend + WebSocket, Ingress restrictions, and verified full backup rollback.
+- No main merge and no GitHub Release. Resume real-source migration rehearsal before any release.

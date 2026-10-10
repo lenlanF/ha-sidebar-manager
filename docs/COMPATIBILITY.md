@@ -38,3 +38,11 @@ See DEVELOPMENT_LOG.md for executed checks and run URLs.
 - Chromium desktop/mobile UI (simulated HA backend): JSON export/download, import preview, confirmation and menu state recovery (2/2, same run).
 - HACS repository validator: 9/9 passed (run 38043711445).
 - Real HA frontend and upstream HACS in-place migration are **not** validated. A menu JSON is not an HA snapshot and importing it cannot reverse installed code upgrades.
+
+## Upstream 2026.4.13 migration fixture / v0.1.0-dev.4
+
+Upstream ConfigFlow saves the menu title inside `ConfigEntry.data`. Its OptionsFlow saves `icon`, `url`, `mode`, `require_admin`, and `proxy_access` in `options`. A sanitized representative fixture in `tests/fixtures/upstream_2026_4_13.json` covers this layout. It is not an extracted HA user backup.
+
+The real HA 2026.10 test suite verifies loading old entries, native options editing, preserving unknown legacy fields, cross-instance restoration of icon/permissions/state/order and serving frontend JavaScript through real HA HTTP. Run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651: 16/16 passed.
+
+Legacy HTTP proxy behavior is intentionally **disabled** and will not be restored automatically; users depending on it must migrate to a supported secure URL/open method. An actual HACS repository source swap over installed upstream code, persistent HA process restart, and production rollback are still untested.

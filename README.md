@@ -80,3 +80,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 详细测试/升级/回退操作见 [docs/UPGRADE_AND_ROLLBACK.md](docs/UPGRADE_AND_ROLLBACK.md)。
 
 **最新验证**：HA 2026.10 Core 功能测试 **12/12 通过**，Chromium 桌面/手机交互、源码及 API 导入均通过 — [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711432)；HACS 官方校验 **9/9 通过** — [HACS](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445)。上述浏览器测试使用模拟 WebSocket，不能替代在真实 HA 前端中的手动验收，尚未发布正式版本。
+
+## 升级兼容进度：v0.1.0-dev.4
+
+- 已按原版 `shaonianzhentan/panel_iframe` 2026.4.13 的实际 `data.title` + `options` 配置结构建立**脱敏模拟样本**，并测试菜单在新集成中加载、管理和通过 HA 选项页面继续修改。
+- 修复跨实例恢复时“名称、URL 相同但图标/权限/启停/排序不同被跳过”的问题。
+- 新增 HA HTTP 测试，确认两个前端 JS 文件可通过真实 HA 资源路由读取。
+- 自动化验证：[HA 2026.10 Core 16/16 + Chromium 桌面/手机](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651)。
+- **仍未**实际在 HACS 已安装旧版插件的 HA 实例中执行覆盖升级、重启和全备份回退；不能将上述自动化测试视作生产升级验收。

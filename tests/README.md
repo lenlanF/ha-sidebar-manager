@@ -22,3 +22,5 @@ Isolated tests are deliberately not labeled as full integration tests.
 - v0.1.0-dev.3: 12 actual HA 2026.10 Core functional tests including menu JSON export/preview/restore, non-admin denial, cross-instance import, conflict rejection and same-title entries. Run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711432.
 - Chromium UI test 2/2 passed with simulated HA WebSocket including download + preview + confirmation (same run). Real HA frontend is still outstanding.
 - Official HACS structure validation 9/9 passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445.
+
+- v0.1.0-dev.4: real upstream 2026.4.13 ConfigEntry layout fixture and HA OptionsFlow migration, cross-host restore of icon/permissions/enabled/order, real HA HTTP retrieval of management JS: 16/16 functional tests passed. https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651.
