@@ -784,3 +784,52 @@ async def test_unconfigured_legacy_options_form_keeps_unknown_metadata(hass):
     await hass.async_block_till_done()
     assert entry.options["old_option"] == "must-survive"
     assert entry.options["url"] == ""
+
+
+@pytest.mark.asyncio
+async def test_legacy_menu_changes_persist_in_ha_native_storage(
+    hass, hass_storage, freezer
+):
+    """Verify native HA storage records preserve old fields after an edit.
+
+    This tests HA's serialized storage representation; it is not a fresh HA
+    operating-system process start or a HACS source-replacement rehearsal.
+    """
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="持久化旧菜单",
+        data={"title": "持久化旧菜单", "legacy_extra": "retain"},
+        options={
+            "url": "/config/logs", "mode": "3", "icon": "mdi:link",
+            "require_admin": False, "old_option": "retain",
+        },
+        entry_id="legacy-persisted-storage",
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    hass.config_entries.async_update_entry(
+        entry, options={
+            **entry.options, "url": "/config/integrations",
+            "icon": "mdi:devices", "enabled": False,
+        },
+    )
+    await hass.async_block_till_done()
+    freezer.tick(2)
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done()
+
+    stored = hass_storage["core.config_entries"]
+    persisted = next(
+        x for x in stored["data"]["entries"]
+        if x["entry_id"] == "legacy-persisted-storage"
+    )
+    assert persisted["domain"] == DOMAIN
+    assert persisted["title"] == "持久化旧菜单"
+    assert persisted["data"]["legacy_extra"] == "retain"
+    assert persisted["data"]["title"] == "持久化旧菜单"
+    assert persisted["options"]["url"] == "/config/integrations"
+    assert persisted["options"]["icon"] == "mdi:devices"
+    assert persisted["options"]["enabled"] is False
+    assert persisted["options"]["old_option"] == "retain"
