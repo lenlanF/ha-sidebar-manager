@@ -219,3 +219,15 @@
 - **Evidence:** [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091) on code commit `27c7e3a3e`: **all 7 jobs passed**; `tests/live_browser` **6/6 passed** (4 original real WS cases + 2 complete SPA cases); regular HA Core **19 passed**; prior simulated Chromium, native ConfigEntry cross-process and pinned upstream source upgrade/rollback passed.
 - [HACS validator](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086): **9/9 official repository checks passed** on that code commit.
 - **Remaining validation boundary:** full frontend shell was tested on an isolated HA Core instance with test authentication, **not** physical iOS/Android HA apps, Supervisor/HAOS reboot, HACS-installed repository source switch or complete HA backup/restore. Ingress/CSP and third-party iframe behaviors still require a dedicated matrix. No merge into main, public release or production upgrade.
+
+## 2026-10-11 — iframe/CSP fallback and real internal navigation (v0.1.0-dev.11)
+
+- Based on v0.1.0-dev.10 logs and code, added a visible, accessible safe new-window link in iframe embedded mode 0 and full-screen mode 1. Full-screen floating actions are anchored to the current panel. Links use target=_blank and rel=noopener noreferrer; no policy bypass or automatic detection of cross-origin iframe failure is claimed.
+- Existing mixed HTTPS-parent/HTTP-target behavior still refuses forced iframe embedding and offers a new-window link.
+- Added tests/live_browser/test_iframe_compat.py, using real HA HTTP for the test host/script and the allowed iframe page. Restrictive X-Frame-Options DENY and CSP frame-ancestors none are injected only into disposable test iframe responses via Playwright, then enforced by real Chromium, with fallbacks verified.
+- First test failure: HA HTTP middleware normalized/replaced X-Frame-Options, so a DENY header returned by a HomeAssistantView was not reliably enforced. Corrected the test fixture to control only the iframe response; production HA security policy remains untouched.
+- Added internal menu mode-3 navigation to the real authenticated HA SPA test. Initial strict URL assertion failed because HA 2026.10 correctly normalizes /config/integrations to /config/integrations/dashboard. Adjusted assertion to recognize either correct path.
+- Expanded Node tests for mode 0/1 safe fallback, mixed-content refusal and opaque HAOS ingress-like paths. Added docs/INGRESS_AND_EMBEDDING.md with an explicit HAOS/Supervisor acceptance matrix and security boundaries.
+- CI evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572 on source commit e6f4b3f47: 7/7 jobs passed, 12/12 real HA HTTP/Chromium scenarios, 19/19 regular HA Core functional tests, cross-process store, pinned upstream source upgrade/rollback, isolated and API tests.
+- HACS validator: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573, 9/9 passed.
+- Not tested: actual Supervisor Ingress endpoints, installed HACS source switch, HAOS reboot/complete backup restore or physical mobile devices. No main branch merge or release.
