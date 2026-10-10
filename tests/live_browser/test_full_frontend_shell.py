@@ -8,6 +8,7 @@ import json
 
 import pytest
 from homeassistant import setup
+from homeassistant.components import frontend
 from homeassistant.components.onboarding.const import STEPS
 from playwright.async_api import async_playwright, expect
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -93,11 +94,7 @@ async def test_full_ha_frontend_shell_opens_sidebar_manager(
             # Home Assistant internal navigation without an iframe or a new
             # browser tab. This catches broken location-changed integration.
             await hass.async_block_till_done()
-            assert entries[0].entry_id in [
-                panel.frontend_url_path for panel in
-                __import__("homeassistant.components.frontend", fromlist=["async_get_panels"])
-                    .async_get_panels(hass).values()
-            ]
+            assert frontend.async_panel_exists(hass, entries[0].entry_id)
             await page.goto(origin + "/" + entries[0].entry_id)
             await expect(page).to_have_url(
                 origin + "/config/integrations", timeout=15000
