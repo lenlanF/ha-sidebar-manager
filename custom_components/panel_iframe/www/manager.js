@@ -65,9 +65,14 @@
       this._showForm = false;
       this._editing = null;
       this._draft = null;
+      this._pendingBackup = null;
+      this._backupPreview = null;
       this._search = "";
       this.shadowRoot.addEventListener("click", (event) => this._onClick(event));
       this.shadowRoot.addEventListener("submit", (event) => this._onSubmit(event));
+      this.shadowRoot.addEventListener("change", (event) => {
+        if (event.target?.id === "import-backup-file") this._onBackupFile(event.target);
+      });
       this.shadowRoot.addEventListener("input", (event) => {
         if (event.target.id !== "filter") return;
         this._search = event.target.value;
@@ -155,6 +160,100 @@
         + '</div></div>';
     }
 
+    _backupPanelHTML() {
+      if (!this._backupPreview) return "";
+      const {counts, plan} = this._backupPreview;
+      const rows = plan.map(row => {
+        const verb = {create:"新增", update:"恢复原有菜单", skip:"无需修改"}[row.action] || "未知";
+        return '<li>' + escapeHTML(row.title) + ' — ' + escapeHTML(verb) + '</li>';
+      }).join("");
+      return '<section class="notice" aria-label="备份恢复预览"><h3>导入预览（尚未修改）</h3>'
+        + '<p>新增 ' + counts.create + ' 项，更新 ' + counts.update
+        + ' 项，跳过 ' + counts.skip + ' 项。恢复不会自动删除任何其他菜单。</p>'
+        + '<p class="muted">请确认内容与预期一致。恢复过程不是 HA 整机快照，若 HA 在操作中发生错误，可能仅部分菜单恢复成功。</p>'
+        + '<ul>' + rows + '</ul>'
+        + '<div class="actions"><button data-action="discard-backup">取消</button>'
+        + '<button class="primary" data-action="apply-backup">确认恢复菜单</button></div></section>';
+    }
+
+    async _exportBackup() {
+      this._busy = true;
+      this._error = "";
+      this._render();
+      try {
+        const data = await this._send("backup");
+        const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "ha-sidebar-manager-" + new Date().toISOString().slice(0,10) + ".json";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this._notice = "菜单备份已导出到本地，请妥善保管。URL 可能包含敏感信息。";
+      } catch (error) {
+        this._error = "导出失败：" + (error?.message || String(error));
+      } finally {
+        this._busy = false;
+        this._render();
+      }
+    }
+
+    async _onBackupFile(input) {
+      const file = input.files?.[0];
+      if (!file || this._busy) return;
+      this._busy = true;
+      this._error = "";
+      this._notice = "";
+      this._pendingBackup = null;
+      this._backupPreview = null;
+      this._render();
+      try {
+        if (file.size > 256000) throw new Error("备份文件超过 256 KB 上限");
+        const backup = JSON.parse(await file.text());
+        const result = await this._send("restore", {backup, apply:false});
+        this._pendingBackup = backup;
+        this._backupPreview = result;
+        this._notice = "校验已通过；尚未恢复。请审查下方菜单预览。";
+      } catch (error) {
+        this._error = "导入校验失败：" + (error?.message || String(error));
+      } finally {
+        this._busy = false;
+        this._render();
+      }
+    }
+
+    async _applyBackup() {
+      if (!this._pendingBackup || !this._backupPreview || this._busy) return;
+      if (!confirm("请确认已经导出当前菜单备份。恢复可能修改已有菜单，是否继续？")) return;
+      this._busy = true;
+      this._error = "";
+      this._render();
+      try {
+        const result = await this._send("restore", {
+          backup:this._pendingBackup, apply:true,
+        });
+        if (!result.applied) {
+          throw new Error("仅部分操作可能已经完成（"
+            + (result.completed?.length || 0) + " 项）。失败项："
+            + result.failed_index + "；" + (result.error || "未知错误")
+            + "。请先刷新列表核对再继续。");
+        }
+        this._pendingBackup = null;
+        this._backupPreview = null;
+        this._entries = await this._send("list");
+        this._notice = "菜单恢复完成：新增 " + result.counts.create
+          + "、更新 " + result.counts.update + "、跳过 " + result.counts.skip;
+      } catch (error) {
+        this._error = "恢复失败：" + (error?.message || String(error));
+      } finally {
+        this._busy = false;
+        this._render();
+      }
+    }
+
     _render() {
       const loading = this._busy ? '<div class="notice">正在处理，请稍候…</div>' : "";
       const error = this._error ? '<div class="notice error" role="alert">' + escapeHTML(this._error) + '</div>' : "";
@@ -163,8 +262,9 @@
         + '<header class="top"><ha-menu-button></ha-menu-button><h1>侧边栏管理器</h1></header>'
         + '<div class="main"><div class="heading"><div><h2>菜单管理</h2>'
         + '<div class="muted">管理 Home Assistant 内部页面、集成入口及外部网页 · ' + this._entries.length + ' 项</div></div>'
-        + '<div class="actions"><button data-action="refresh">刷新</button><button class="primary" data-action="add">＋ 新增菜单</button></div></div>'
-        + error + notice + loading + this._formHTML()
+        + '<div class="actions"><button data-action="backup">导出备份</button><button data-action="import">导入备份</button><button data-action="refresh">刷新</button><button class="primary" data-action="add">＋ 新增菜单</button></div></div>'
+        + '<input id="import-backup-file" type="file" accept=".json,application/json" hidden aria-label="选择菜单备份文件">'
+        + error + notice + loading + this._backupPanelHTML() + this._formHTML()
         + '<div class="actions"><input class="search" id="filter" type="search" aria-label="搜索菜单" placeholder="搜索菜单或路径…" value="' + escapeHTML(this._search) + '"></div>'
         + (this._entries.length ? this._entries.map((item,index) => this._entryHTML(item,index)).join("")
            : '<div class="empty">当前没有菜单，点击“新增菜单”开始配置。</div>')
@@ -179,6 +279,16 @@
       if (!button || this._busy) return;
       const action = button.dataset.action;
       const entryId = button.dataset.id;
+      if (action === "backup") return this._exportBackup();
+      if (action === "import") {
+        return this.shadowRoot.querySelector("#import-backup-file")?.click();
+      }
+      if (action === "discard-backup") {
+        this._pendingBackup = null;
+        this._backupPreview = null;
+        return this._render();
+      }
+      if (action === "apply-backup") return this._applyBackup();
       if (action === "refresh") return this._refresh();
       if (action === "add") {
         this._editing = null;
