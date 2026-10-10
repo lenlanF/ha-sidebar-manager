@@ -32,7 +32,7 @@ Supervisor/HAOS 的 Ingress 是独立的认证及路径转发能力。一个支�
 
 测试文件：
 
-- `tests/live_browser/test_iframe_compat.py`：HA HTTP 测试服务器提供允许 iframe、`X-Frame-Options: DENY`、`Content-Security-Policy: frame-ancestors 'none'` 三类响应；在真实 Chromium 中验证浏览器拦截、按钮可见、链接目标与 `noopener noreferrer`，并覆盖模式 0 和 1。
+- `tests/live_browser/test_iframe_compat.py`：真实 HA HTTP 提供测试宿主页、前端脚本及允许嵌入的目标；XFO/CSP 拒绝嵌入场景通过 Playwright 仅给**受控的测试 iframe 响应**注入安全头（避免 HA 中间件覆盖），由真实 Chromium 执行限制。覆盖模式 0、1 的备用入口、安全属性及窄屏布局。
 - `tests/live_browser/test_full_frontend_shell.py`：从已认证的完整 HA 前端打开菜单入口，验证模式 3 能够发起内部路径跳转。
 - `tests/test_frontend_panel.cjs`：验证组件在没有完整 HA 的 JS 单元环境下仍保持正确 URL、内部导航和安全新窗口链接。
 
@@ -48,3 +48,7 @@ Supervisor/HAOS 的 Ingress 是独立的认证及路径转发能力。一个支�
 6. 复核 HA 日志和浏览器控制台；出现失败时记录目标网址的**脱敏形式**、响应的 CSP/X-Frame-Options 与场景，切勿在工单公开 token。
 
 未在 HAOS/Supervisor 环境完成以上实际测试前，Ingress 兼容性保持「待验收」，不得用 Core CI 的通过结果代替。
+
+## 最新证据（v0.1.0-dev.11）
+
+[Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572)：12/12 真实 HA/Chromium 用例通过（包括响应安全头组合及内部路由）；[HACS](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573)：9/9。HA 2026.10 会把 `/config/integrations` 正常规范化为 `/config/integrations/dashboard`。真实 Supervisor Ingress 仍未验收。
