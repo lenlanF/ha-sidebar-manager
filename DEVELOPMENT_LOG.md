@@ -20,3 +20,16 @@
 3. Multiple entries and reloads do not raise route-already-registered errors.
 4. Internal HA URLs navigate correctly, without recurring navigation side effects from `render()`.
 5. Logs and tests demonstrate compatibility; failures are visible, not swallowed.
+
+
+## 2026-10-10 — Compatibility foundation work (dev/compat-foundation)
+
+- Imported upstream integration Python runtime, frontend script, HTML shell and existing translation into a dedicated development branch.
+- Added an unreleased HA integration manifest and HACS metadata.
+- Changed options flow initialization to use Home Assistant supplied `self.config_entry` rather than manually retaining an older entry object.
+- Reworked shared static-path registration behind an async lock to avoid repeated registration from multiple entries.
+- Replaced manual unload/sleep/re-setup update path with native config-entry reload.
+- Disabled invocation of the upstream wildcard HTTP proxy pending a security review; legacy option values are retained.
+- Outstanding: MDI binary assets, multi-entry live tests, internal-route redirect rewrite, visual manager UI, security review, package validation.
+- Verification: GitHub writes confirmed; **no HA runtime test or distributable package yet**.
+- Do not merge or release until the prerequisites in `docs/COMPATIBILITY.md` are verified.
