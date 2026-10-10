@@ -48,6 +48,13 @@ const iframe=new Panel();
 iframe.panel={title:"控制台",config:{mode:"0",url:"https://nas.example/"}};
 assert.ok(iframe.shadowRoot.innerHTML.includes("<iframe"));
 assert.ok(iframe.shadowRoot.innerHTML.includes("https://nas.example/"));
+assert.ok(iframe.shadowRoot.innerHTML.includes('class="open-link"'), "embedded toolbar offers a fallback for blocked CSP");
+assert.ok(iframe.shadowRoot.innerHTML.includes('rel="noopener noreferrer"'), "fallback must not grant opener access");
+const full=new Panel();
+full.panel={title:"全屏仪表盘",config:{mode:"1",url:"https://nas.example/"} };
+assert.ok(full.shadowRoot.innerHTML.includes('class="floating-actions"'), "full-screen mode exposes a fallback");
+assert.ok(full.shadowRoot.innerHTML.includes('target="_blank"'));
+
 
 const popup=new Panel();
 popup.panel={title:"网站",config:{mode:"2",url:"https://example.org/"}};
