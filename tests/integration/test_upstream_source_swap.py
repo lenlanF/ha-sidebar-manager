@@ -58,8 +58,12 @@ async def test_upstream_2026_4_13_creates_and_saves_real_entry(
     assert entry.title == ENTRY_TITLE
     assert entry.data == {"title": ENTRY_TITLE}
 
-    # Preserve the actual upstream ConfigEntry layout: options are the user's
-    # settings from the upstream OptionsFlow.
+    # The original integration contains an outdated update listener that
+    # manually unloads and re-adds its panel. Record its ConfigFlow-produced
+    # entry and unload it before saving representative options in HA native
+    # storage; the NEXT process must load the resulting upstream-format entry.
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
     hass.config_entries.async_update_entry(
         entry,
         options={
