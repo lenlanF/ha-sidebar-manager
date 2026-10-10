@@ -115,3 +115,40 @@ jobs:
           HA_RESTART_FILE: ${{ runner.temp }}/ha-restart-core-config-entries.json
           PYTEST_ADDOPTS: "--asyncio-mode=auto"
         run: python -m pytest -q tests/integration/test_restart_persistence.py --disable-warnings
+
+  pinned-upstream-source-upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Install Home Assistant functional test runtime
+        run: python -m pip install "pytest-homeassistant-custom-component" "homeassistant>=2026.10,<2026.11" "home-assistant-frontend==20260930.2"
+      - name: Checkout genuine upstream integration at pinned commit
+        run: |
+          git init "${{ runner.temp }}/panel-iframe-original"
+          git -C "${{ runner.temp }}/panel-iframe-original" remote add origin https://github.com/shaonianzhentan/panel_iframe.git
+          git -C "${{ runner.temp }}/panel-iframe-original" fetch --depth=1 origin 90c849d34b3ebb749c5f62a3e206e62888e4c050
+          git -C "${{ runner.temp }}/panel-iframe-original" checkout --detach FETCH_HEAD
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          d = Path(os.environ["RUNNER_TEMP"]) / "panel-iframe-original" / "custom_components" / "panel_iframe"
+          assert json.loads((d / "manifest.json").read_text())["version"] == "2026.4.13"
+          print("Pinned upstream source verified")
+          PY
+      - name: Process A - original upstream ConfigFlow and native storage
+        env:
+          HA_UPGRADE_PHASE: original
+          HA_TEST_PLUGIN_SOURCE: ${{ runner.temp }}/panel-iframe-original/custom_components/panel_iframe
+          HA_UPGRADE_FILE: ${{ runner.temp }}/original-panel-iframe-store.json
+          PYTEST_ADDOPTS: "--asyncio-mode=auto"
+        run: python -m pytest -q tests/integration/test_upstream_source_swap.py --disable-warnings -x
+      - name: Process B - fork source loads the saved original entry
+        env:
+          HA_UPGRADE_PHASE: fork
+          HA_UPGRADE_FILE: ${{ runner.temp }}/original-panel-iframe-store.json
+          PYTEST_ADDOPTS: "--asyncio-mode=auto"
+        run: python -m pytest -q tests/integration/test_upstream_source_swap.py --disable-warnings -x
