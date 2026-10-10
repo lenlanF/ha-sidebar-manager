@@ -84,7 +84,7 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
     # TestClient's server owns the actual socket and routes requests to HA.
     client = await hass_client()
     module_url = str(client.make_url("/panel_iframe_www/manager.js"))
-    response = await client.get(module_url)
+    response = await client.get("/panel_iframe_www/manager.js")
     assert response.status == 200
     assert "ha-sidebar-manager-panel" in await response.text()
 
