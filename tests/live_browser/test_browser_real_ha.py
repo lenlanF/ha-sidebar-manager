@@ -143,7 +143,7 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             ]
             assert len(entries) == 1
             entry = entries[0]
-            assert entry.options["url"] == "/config/integrations"
+            assert {**entry.data, **entry.options}["url"] == "/config/integrations"
 
             await manager.locator('button[data-action="toggle"]').click()
             await expect(manager.locator(".entry .badge")).to_contain_text("已停用")
