@@ -98,6 +98,8 @@ def prepare_restore(
             raise BackupValidationError(f"item_{index}_invalid_url")
         if not isinstance(raw["icon"], str) or len(raw["icon"]) > 100:
             raise BackupValidationError(f"item_{index}_invalid_icon")
+        if not isinstance(raw["mode"], str) or raw["mode"] not in ("0", "1", "2", "3"):
+            raise BackupValidationError(f"item_{index}_invalid_mode")
         if type(raw["require_admin"]) is not bool or type(raw["enabled"]) is not bool:
             raise BackupValidationError(f"item_{index}_invalid_flags")
 
