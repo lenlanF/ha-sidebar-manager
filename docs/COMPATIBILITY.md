@@ -75,3 +75,9 @@ The `tests/live_browser` fixture runs the actual HA 2026.10 HTTP and WebSocket s
 The HTML host is served by a **test-only HA HTTP static registration** from `tests/live_browser/host.html`. This avoids Chromium 153's Local Network Access rejection of synthetic Playwright-fulfilled pages without weakening Chromium security. It is still not the full logged-in HA frontend shell or mobile native app.
 
 Evidence: 2/2 real browser WS scenarios + all previously implemented suites passed (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505); HACS 9/9 (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424). Full HACS-installed source replacement, Ingress, whole-HA restart and Supervisor restore remain untested.
+
+## v0.1.0-dev.9 — real frontend registry, permissions and URL serving
+
+Real Chromium tests against HA Core 2026.10 now cover the native frontend `get_panels` WebSocket command using administrator and read-only credentials, admin-only and unrestricted panel visibility, the module URLs registered in HA's frontend panel metadata, safe new-window links, and the real SPA index responder at manager/menu paths. Panel unload is verified against subsequent `get_panels` responses.
+
+CI evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602 (4/4 browser tests, 19 HA Core functional tests, all jobs passing) and https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639 (HACS 9/9). This still **does not** exercise full authenticated HA SPA shell rendering or an actual HACS installation-source change.

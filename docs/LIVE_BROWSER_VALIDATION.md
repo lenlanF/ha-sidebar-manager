@@ -37,3 +37,14 @@ The test also learned that newly created menu settings may live in `ConfigEntry.
 - The test does **not** launch the complete logged-in Home Assistant SPA/navigation shell; the browser host is minimal and `hass.connection` is a lightweight adapter.
 - It does **not** check HACS repo switching for installed integrations, physical mobile apps, Supervisor/HAOS restart, full server backups, or add-on Ingress/CSP compatibility.
 - Nothing in this suite modifies a production HA instance. Do not infer a production-ready release from this check alone.
+
+## Extended HA frontend registry and permission validation (v0.1.0-dev.9)
+
+The browser suite now additionally calls Home Assistant's **real authenticated frontend `get_panels` WebSocket command**, once as a HA administrator and once as a read-only HA user, at two Chromium viewport sizes. It validates manager/admin-only panel visibility, unrestricted menu visibility, component metadata and module URLs, then loads and executes the menu component by the module URL supplied by HA. It also checks `noopener noreferrer` on new-window links.
+
+The registered `/ha-sidebar-manager` and menu URL paths are checked against Home Assistant's genuine SPA index responder, and a menu unload must immediately disappear from `get_panels`. The test uses the HA-served minimal host for its JS component rather than a complete logged-in HA frontend shell; no client-side responses are mocked.
+
+- [Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602): **4/4 real HA-WebSocket Chromium tests passed**; 19 HA Core functional tests plus existing regression jobs also passed.
+- [HACS validator](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639): **9/9 passed**.
+
+Remaining: complete logged-in HA navigation shell, HACS repo switching and real deployment rollback, physical mobile and Ingress/CSP.

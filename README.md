@@ -120,3 +120,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 管理器 JavaScript 直接由 HA 的静态资源路由提供；浏览器使用了由测试 HA HTTP 提供的 UTF-8 最小宿主页面，没有伪造 WebSocket 返回，也没有关闭 Chromium 的本地网络安全检查。
 - 证据：[全部源码/功能/浏览器检查](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505) 全部成功；[HACS 官方校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424) 9/9 通过。
 - **仍未完成**：浏览器登录并加载完整 HA 前端应用壳层、真实侧边栏与 add-on Ingress 交互、HAOS / Supervisor 安装更新及整机备份恢复。详见 [浏览器真实联动测试说明](docs/LIVE_BROWSER_VALIDATION.md)。
+
+## 开发版 v0.1.0-dev.9：真实 HA 前端菜单发现与权限
+
+- Chromium 在 1366px 桌面及 375px 手机宽度下，通过 **真实 HA Core HTTP、已认证 WebSocket 和 `get_panels`** 检查管理员与普通用户实际看到的菜单。
+- 已验证管理器仅管理员可见、普通菜单正常可见、管理员菜单不可见，以及原生 HA 返回的模块 URL 能加载对应的菜单组件。
+- 已验证 HA 的 `/ha-sidebar-manager` 和菜单地址返回前端 HTML，删除/卸载后前端菜单列表正确更新。
+- [真实浏览器与 HA 联动 4/4，通过](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602)；[HACS 官方 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639)。
+- 尚未测试完整登录后的 HA 前端 SPA 壳层、实际 HACS 安装仓库切换、Ingress/CSP 和完整 HAOS 备份回滚；开发分支暂不发布正式版。

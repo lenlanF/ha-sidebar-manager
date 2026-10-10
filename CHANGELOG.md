@@ -125,3 +125,10 @@
 - Add test-only UTF-8 HTML hosted by HA; no WebSocket response mocks or browser local-network security bypass.
 - All Source checks passed: 19 HA Core tests, genuine upstream upgrade/rollback, separate-process native storage load and 2/2 real Chromium WebSocket tests (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505). HACS validation 9/9 (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424).
 - Full HA authenticated frontend shell, HACS installed source swap and Supervisor backup restore still remain pre-release blockers.
+
+## Unreleased — 0.1.0-dev.9 (2026-10-10)
+
+- Add real Chromium tests of HA Core's authenticated frontend `get_panels` registry, using both admin and read-only HA accounts.
+- Validate correct frontend visibility, registered custom-panel names and modules, actual HA SPA index routing, menu link safety and prompt removal from panel metadata on unload.
+- Verified 4/4 browser tests using real HA HTTP and WebSocket; 19 HA Core functional tests and all other CI checks passed (source run 38061488602); HACS 9/9 passed (run 38061488639).
+- Still not a full signed-in HA frontend shell or actual HACS migration acceptance; no official release.

@@ -34,3 +34,5 @@ Isolated tests are deliberately not labeled as full integration tests.
 
 - v0.1.0-dev.8: `tests/live_browser/test_browser_real_ha.py` with HA-native HTTP + authenticated browser WebSocket, 1366px/375px Chromium create/edit/toggle/delete and live ConfigEntry assertions. **2/2 passed** (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505). Runs in separate GitHub Actions job; not a full HA frontend-shell acceptance test.
 - Chromium 153 Local Network Access checks block synthetic Playwright HTML origins. The live test instead has HA HTTP serve `tests/live_browser/host.html`; browser security is not disabled.
+
+- v0.1.0-dev.9: `tests/live_browser/test_browser_real_ha.py` additionally queries the real frontend `get_panels` as admin/read-only accounts, checks registered manager/menu paths and module assets, and verifies panel removal. 4/4 real WebSocket Chromium tests passed, https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602.

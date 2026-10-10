@@ -196,3 +196,15 @@
 - **HACS validator** [run](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424): 9/9 checks passed on same source commit.
 - **Boundaries**: authenticated browser WebSocket and actual HA HTTP assets are verified, but the test uses a minimal browser host instead of full logged-in HA frontend application shell. No real HACS installed-repository migration, mobile physical device, Ingress/CSP matrix, HAOS service process restart or Supervisor full backup restore.
 - No main merge, release, or production upgrade performed. Next: full HA frontend shell + HACS installed-source migration in disposable HA instance.
+
+## 2026-10-10 — Real HA frontend registry and role-based browser validation (v0.1.0-dev.9)
+
+- Re-read project DEVELOPMENT_LOG.md, CHANGELOG.md, manifest version and existing real-HA browser fixtures before editing. Continued on `dev/compat-foundation`; no production installation or main-branch merge.
+- Extended `tests/live_browser/test_browser_real_ha.py` with two Chromium browser cases (1366×768 desktop and 375×812 mobile-width), adding real authenticated `get_panels` WebSocket queries to **HA Core's frontend service** with an HA administrator and a real read-only user.
+- Verified HA frontend role-based filtering: manager admin panel is not listed for read-only user; an admin-only item is hidden; an unrestricted item remains accessible in the frontend panel list.
+- Verified the exact `component_name`, `_panel_custom.name` and `module_url` returned by HA; Chromium fetched the **returned** menu JS module and rendered its new-window link without a mock backend. Verified external links retain `rel="noopener noreferrer"`.
+- Verified the real HA frontend routes `/ha-sidebar-manager` and `/<menu_entry_id>` serve the SPA HTML bootstrap, and that unloading the public menu removes it from subsequent `get_panels` results. The management JS module registered by HA also loads into a browser custom element.
+- [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602) on commit `818e789d7`: all seven CI jobs succeeded. Real HA HTTP/WS Chromium **4/4 passed**, HA 2026.10 Core functional **19 passed / 5 intentionally skipped phase-only cases**, standalone mocked backend browser checks, cross-process ConfigEntry store, genuine upstream source-swap and rollback, isolated tests and HA API imports succeeded.
+- [HACS validation](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639): all 9 repository checks passed on the same commit.
+- **Remaining release gates:** the browser uses a minimal HA-served host for custom elements instead of the full signed-in Home Assistant SPA shell; actual HACS-installed repository migration, whole HA service restart, add-on ingress/CSP behavior and physical mobile remain untested. Do not claim these were completed.
+- Next: isolated full authenticated HA SPA rendering, HACS install-source migration and complete backup/restore in a disposable HA instance. No Release or main merge.
