@@ -654,3 +654,35 @@ async def test_cross_instance_same_url_restores_different_icon_permissions(hass,
     assert menu.options["enabled"] is True
     assert menu.options["menu_order"] == 2
     assert menu.options["old_extra"] == "keep"
+
+
+@pytest.mark.asyncio
+async def test_upstream_options_flow_can_edit_old_entry(hass):
+    """Legacy title-in-data entry remains editable through HA native OptionsFlow."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="旧服务",
+        data={"title": "旧服务", "old_data": "preserved"},
+        options={
+            "url": "https://example.org", "icon": "mdi:link",
+            "mode": "0", "require_admin": False, "proxy_access": True,
+            "old_option": "preserved",
+        },
+        entry_id="upstream-old-options-entry",
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    flow = await hass.config_entries.options.async_init(entry.entry_id)
+    assert flow["type"] == "form", flow
+    result = await hass.config_entries.options.async_configure(
+        flow["flow_id"],
+        {
+            "url": "/config/integrations", "icon": "mdi:devices",
+            "mode": "3", "require_admin": True, "enabled": True,
+        },
+    )
+    assert result["type"] == "create_entry", result
+    await hass.async_block_till_done()
+    assert entry.options["url"] == "/config/integrations"
+    assert entry.options["proxy_access"] is False
+    assert entry.data["old_data"] == "preserved"
