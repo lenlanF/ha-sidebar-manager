@@ -68,7 +68,7 @@
       if (key === this._key) return;
       this._key = key;
       const style = '<style>'
-        + ':host{display:block;height:100%;min-height:0;background:var(--primary-background-color);color:var(--primary-text-color);font-family:Roboto,"Noto Sans",sans-serif;}'
+        + ':host{display:block;position:relative;height:100%;min-height:0;background:var(--primary-background-color);color:var(--primary-text-color);font-family:Roboto,"Noto Sans",sans-serif;}'
         + '*{box-sizing:border-box}.head{min-height:var(--header-height,56px);display:flex;align-items:center;gap:12px;padding:0 14px;background:var(--app-header-background-color,var(--card-background-color));}'
         + '.menu{border:0;background:none;font-size:22px;color:inherit;cursor:pointer;padding:8px 11px}.head h2{font-size:18px;font-weight:500;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}'
         + '.frame{height:calc(100% - var(--header-height,56px));}.full{height:100%;}iframe{width:100%;height:100%;border:0;}'
