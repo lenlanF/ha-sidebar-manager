@@ -100,3 +100,78 @@ async def test_create_sidebar_entry_from_native_flow(hass):
     assert len(entries) == 1
     assert entries[0].title == "设备管理"
     assert entries[0].data["url"] == "/config/integrations"
+
+
+@pytest.mark.asyncio
+async def test_real_websocket_crud(hass, hass_ws_client):
+    """Manage real config entries through HA's authenticated WebSocket."""
+    await setup.async_setup_component(hass, "frontend", {})
+    manager = MockConfigEntry(
+        domain=DOMAIN,
+        title="HA Sidebar Manager",
+        data={"manager_only": True},
+        entry_id="mgr-websocket-test",
+    )
+    manager.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(manager.entry_id)
+    await hass.async_block_till_done()
+
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/list"})
+    listed = await ws.receive_json()
+    assert listed["success"], listed
+    assert listed["result"] == [], listed
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/save",
+        "title": "HA 集成",
+        "url": "/config/integrations",
+        "icon": "mdi:devices",
+        "mode": "3",
+        "require_admin": True,
+    })
+    created = await ws.receive_json()
+    assert created["success"], created
+    await hass.async_block_till_done()
+
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/list"})
+    listed = await ws.receive_json()
+    assert listed["success"], listed
+    assert len(listed["result"]) == 1, listed
+    item = listed["result"][0]
+    assert item["title"] == "HA 集成"
+    assert item["url"] == "/config/integrations"
+    item_id = item["entry_id"]
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/save",
+        "entry_id": item_id,
+        "title": "自动化管理",
+        "url": "/config/automation/dashboard",
+        "icon": "mdi:robot",
+        "mode": "3",
+        "require_admin": True,
+    })
+    updated = await ws.receive_json()
+    assert updated["success"], updated
+    await hass.async_block_till_done()
+
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/list"})
+    listed = await ws.receive_json()
+    assert listed["result"][0]["title"] == "自动化管理"
+    assert listed["result"][0]["url"] == "/config/automation/dashboard"
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/delete", "entry_id": item_id
+    })
+    deleted = await ws.receive_json()
+    assert deleted["success"], deleted
+    await hass.async_block_till_done()
+    assert hass.config_entries.async_get_entry(item_id) is None
+
+    # The setup manager cannot be removed via the menu deletion endpoint.
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/delete", "entry_id": manager.entry_id
+    })
+    denied = await ws.receive_json()
+    assert denied["success"] is False, denied
