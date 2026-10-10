@@ -67,6 +67,22 @@ async def test_embedded_frame_has_real_browser_fallback(
         context = await browser.new_context(viewport={"width": 375, "height": 812})
         page = await context.new_page()
         try:
+            if policy in ("xfo", "csp"):
+                # HA's own HTTP middleware can normalize/replace XFO headers.
+                # Control only this disposable iframe response, not HA's
+                # document or runtime security policy. Chromium still enforces
+                # the resulting XFO/CSP rules as a real browser.
+                blocked_headers = (
+                    {"X-Frame-Options": "DENY"} if policy == "xfo"
+                    else {"Content-Security-Policy": "frame-ancestors 'none'"}
+                )
+                async def blocked_response(route):
+                    await route.fulfill(
+                        status=200,
+                        headers={"Content-Type": "text/html", **blocked_headers},
+                        body='<html><body><p id="frame-loaded">iframe loaded</p></body></html>',
+                    )
+                await page.route(f"**{frame_path}", blocked_response)
             await page.goto(str(client.make_url("/__sidebar_test_host.html")))
             await page.add_script_tag(
                 url=str(client.make_url("/panel_iframe_www/panel_iframe.js"))
