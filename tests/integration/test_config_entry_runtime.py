@@ -215,3 +215,49 @@ async def test_websocket_non_admin_cannot_manage_menus(hass, hass_ws_client):
     response = await ws.receive_json()
     assert response["success"] is False, response
     assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+
+
+@pytest.mark.asyncio
+async def test_shared_manager_lifecycle_and_return_after_reload(hass):
+    """Keep the manager while any entry is active; remove it after the last unload."""
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    bootstrap = MockConfigEntry(
+        domain=DOMAIN,
+        title="HA Sidebar Manager",
+        data={"manager_only": True},
+        entry_id="manager-lifecycle-test",
+    )
+    menu = MockConfigEntry(
+        domain=DOMAIN,
+        title="集成入口",
+        data={"url": "/config/integrations", "mode": "3"},
+        entry_id="menu-lifecycle-test",
+    )
+    for entry in (bootstrap, menu):
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert frontend.async_panel_exists(hass, menu.entry_id)
+
+    assert await hass.config_entries.async_unload(bootstrap.entry_id)
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert frontend.async_panel_exists(hass, menu.entry_id)
+
+    assert await hass.config_entries.async_unload(menu.entry_id)
+    await hass.async_block_till_done()
+    assert not frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert not frontend.async_panel_exists(hass, menu.entry_id)
+    assert not hass.data["panel_iframe_manager_registered"]
+    assert hass.data["panel_iframe_manager_commands_registered"]
+    assert hass.data["panel_iframe_active_entry_ids"] == set()
+
+    # A later re-setup must restore the panel without re-registering WS commands.
+    assert await hass.config_entries.async_setup(bootstrap.entry_id)
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert hass.data["panel_iframe_manager_commands_registered"]
+    assert hass.data["panel_iframe_active_entry_ids"] == {bootstrap.entry_id}
