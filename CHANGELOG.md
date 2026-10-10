@@ -118,3 +118,10 @@
 - Exercise all three phases in independent Python processes using Home Assistant's native ConfigEntry storage and original ConfigFlow.
 - Document the upstream deprecated hot-reload caveat and test-harness timeout; do not claim full HACS migration or HA service restart.
 - Automated checks passed: three pinned upgrade/rollback phases, 19 HA Core tests, Chromium UI, source/API tests, HACS validator 9/9 (run 38057571508 / 38057571332).
+
+## Unreleased — 0.1.0-dev.8 (2026-10-10)
+
+- Add desktop/mobile Chromium regression using actual HA Core HTTP server and authenticated browser-native WebSocket; create/edit/toggle/delete verify real ConfigEntry changes.
+- Add test-only UTF-8 HTML hosted by HA; no WebSocket response mocks or browser local-network security bypass.
+- All Source checks passed: 19 HA Core tests, genuine upstream upgrade/rollback, separate-process native storage load and 2/2 real Chromium WebSocket tests (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505). HACS validation 9/9 (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424).
+- Full HA authenticated frontend shell, HACS installed source swap and Supervisor backup restore still remain pre-release blockers.

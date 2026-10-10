@@ -17,9 +17,9 @@
 
 ## 已知限制
 
-- **已在独立 HA 2026.10 Core 测试实例中完成 7 项集成测试，包括真实 WebSocket CRUD 和非管理员权限；并通过模拟 HA 连接的 Chromium 桌面/手机 UI 测试。尚未在实际运行的 HA 浏览器和生产设备上验收。**
+- **已通过 HA 2026.10 Core 的 19 项常规测试、原版源码升级回退演练，以及 Chromium 桌面/手机经真实 HA HTTP 和已认证 WebSocket 的交互测试。测试仍未覆盖完整 HA 登录后前端壳层、HAOS 整机重启和 HACS 已安装旧插件的来源切换。**
 - 当前上下排序只控制管理列表，HA 左侧菜单排序可能被用户自身的设置覆盖。
-- 尚无菜单分组、拖拽排序、按指定用户显示、备份导入导出和自动识别所有集成。
+- 尚无菜单分组、拖拽排序、按指定用户显示和自动识别所有集成；管理员菜单 JSON 备份和预览恢复已实现。
 - 旧的 MDI 图标预览静态资源未完整迁移，但新的管理界面不再依赖这些资源。
 - 目标网页如果禁止 iframe 嵌入，需改成新窗口模式；HTTPS 页面无法普遍嵌入 HTTP 站点。
 - 旧 HTTP 代理入口因缺少安全边界而停用。
@@ -39,7 +39,7 @@
 
 - `python -m pytest -q tests/test_validation_isolated.py tests/test_manager_isolated.py`
 - GitHub Actions：Python 语法、JSON、JavaScript、隔离 CRUD 测试和 Home Assistant Core API 导入烟雾测试。
-- 验收门槛：完整安装、多菜单重载、真实浏览器 WebSocket CRUD、旧配置兼容、权限、回滚和移动端。
+- 剩余发布门槛：完整 HA 前端应用壳层和移动端实机、HACS 旧仓库来源迁移、Supervisor 整机备份回滚及 Ingress/CSP。
 
 详见 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)、[CHANGELOG.md](CHANGELOG.md) 与 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
 
@@ -112,3 +112,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 保存菜单的 URL 等旧版 OptionsFlow 字段时使用 HA 原生 ConfigEntry API，避开原版已过时的热重载逻辑；**未模拟原版 OptionsFlow UI 成功**。
 - 相关测试与常规 19 项 HA Core 功能测试、Chromium 桌面/手机检查全部通过：[完整 CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508)；[HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571332)。
 - **尚不等于实际 HACS 仓库来源切换、HA 完整进程重启或 Supervisor 完整备份回退**。继续限制在开发分支，不能据此建议直接覆盖生产插件。
+
+## v0.1.0-dev.8：Chromium 与真实 HA WebSocket 联动
+
+- 新增 CI 任务 `live-ha-websocket-chromium`，在 HA 2026.10 Core 测试服务器中运行真实 HTTP 与 `/api/websocket`。
+- Chromium **1366×768 桌面**和 **375×812 手机宽度**分别通过 2 项完整交互测试：真实认证、新增、编辑、停用、启用、删除，以及核对 HA ConfigEntry 的实际值。
+- 管理器 JavaScript 直接由 HA 的静态资源路由提供；浏览器使用了由测试 HA HTTP 提供的 UTF-8 最小宿主页面，没有伪造 WebSocket 返回，也没有关闭 Chromium 的本地网络安全检查。
+- 证据：[全部源码/功能/浏览器检查](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505) 全部成功；[HACS 官方校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424) 9/9 通过。
+- **仍未完成**：浏览器登录并加载完整 HA 前端应用壳层、真实侧边栏与 add-on Ingress 交互、HAOS / Supervisor 安装更新及整机备份恢复。详见 [浏览器真实联动测试说明](docs/LIVE_BROWSER_VALIDATION.md)。

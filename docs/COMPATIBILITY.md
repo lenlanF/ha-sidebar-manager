@@ -67,3 +67,11 @@ This deliberately does not claim complete HA service shutdown/startup in distinc
 CI downloads `shaonianzhentan/panel_iframe@90c849d34b3ebb749c5f62a3e206e62888e4c050` (v2026.4.13). Separate pytest/Python processes exercise authentic original ConfigFlow, HA native options persistence, a cold load into the fork, and a return to original files with the original ConfigEntry store. Three phases passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508. This is substantially more grounded than a hand-authored legacy fixture.
 
 **Not exercised**: original OptionsFlow's obsolete reload/UI path, actual HACS repository installation metadata, full HA service subprocess lifecycles, networked live-HA frontend and full Supervisor backup restore. Do not represent a source-copy test as a production HACS migration.
+
+## v0.1.0-dev.8 — browser-native WebSocket connected to real HA
+
+The `tests/live_browser` fixture runs the actual HA 2026.10 HTTP and WebSocket server and fetches the management JavaScript through HA HTTP. Playwright Chromium uses a browser-native authenticated WS connection; the UI's create/edit/enable/disable/delete operations mutate and verify actual HA ConfigEntries, on both 1366px and 375px viewports.
+
+The HTML host is served by a **test-only HA HTTP static registration** from `tests/live_browser/host.html`. This avoids Chromium 153's Local Network Access rejection of synthetic Playwright-fulfilled pages without weakening Chromium security. It is still not the full logged-in HA frontend shell or mobile native app.
+
+Evidence: 2/2 real browser WS scenarios + all previously implemented suites passed (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902505); HACS 9/9 (https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38059902424). Full HACS-installed source replacement, Ingress, whole-HA restart and Supervisor restore remain untested.

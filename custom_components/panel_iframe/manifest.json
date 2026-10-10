@@ -1,7 +1,7 @@
 {
   "domain": "panel_iframe",
   "name": "HA Sidebar Manager",
-  "version": "0.1.0-dev.7",
+  "version": "0.1.0-dev.8",
   "config_flow": true,
   "documentation": "https://github.com/lenlanF/ha-sidebar-manager",
   "issue_tracker": "https://github.com/lenlanF/ha-sidebar-manager/issues",
