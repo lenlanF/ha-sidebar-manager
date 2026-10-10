@@ -46,3 +46,10 @@ Upstream ConfigFlow saves the menu title inside `ConfigEntry.data`. Its OptionsF
 The real HA 2026.10 test suite verifies loading old entries, native options editing, preserving unknown legacy fields, cross-instance restoration of icon/permissions/state/order and serving frontend JavaScript through real HA HTTP. Run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651: 16/16 passed.
 
 Legacy HTTP proxy behavior is intentionally **disabled** and will not be restored automatically; users depending on it must migrate to a supported secure URL/open method. An actual HACS repository source swap over installed upstream code, persistent HA process restart, and production rollback are still untested.
+
+## v0.1.0-dev.5 — old options and unconfigured entries
+
+- Old `OptionsFlow` settings not recognized by this release are now preserved on native edits (tested), except legacy proxy activation is intentionally forced off.
+- Historical title-only entries with no URL can be exported/imported through an explicitly guarded restore path; they are visible in manager lists as not configured but do not register clickable sidebar panels.
+- Verified HA native `core.config_entries` serialized data with old extra fields and modified options intact after delayed save. This is a storage-layer regression, not a full HA process cold-start.
+- HA 2026.10 Core integration **19/19 passed**, Chromium desktop/mobile and source checks succeeded on https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374; HACS validation 9/9 on https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396.

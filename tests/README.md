@@ -24,3 +24,6 @@ Isolated tests are deliberately not labeled as full integration tests.
 - Official HACS structure validation 9/9 passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445.
 
 - v0.1.0-dev.4: real upstream 2026.4.13 ConfigEntry layout fixture and HA OptionsFlow migration, cross-host restore of icon/permissions/enabled/order, real HA HTTP retrieval of management JS: 16/16 functional tests passed. https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651.
+
+- v0.1.0-dev.5 regression: 19/19 HA Core tests passed, including old unknown options kept on native edit, original title-only entries backed up/restored, and saved `core.config_entries` contents. https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374.
+- HACS 9/9: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396. Browser/UI backend is still simulated; live HA process restart and original HACS upgrade remain unchecked.

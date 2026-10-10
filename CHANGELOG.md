@@ -96,3 +96,10 @@
 - Fixed cross-instance menu restoration to update icon, permissions, enablement and order when title+URL matches.
 - Verification: 16/16 HA 2026.10 Core tests and Chromium desktop/mobile tests passed (run 38050016651).
 - HACS repository structure remains valid; live HACS source replacement, persistent restart and full frontend/Ingress test remain release blockers.
+
+## Unreleased — 0.1.0-dev.5 (2026-10-10)
+
+- Preserve previously unknown legacy OptionsFlow values when editing old menus; explicitly keep unsafe proxy disabled.
+- Add safe round-trip backup restoration for original title-only sidebar entries without a configured URL.
+- Add HA native storage serialization regression for preserving old data/options and updated menu settings.
+- Verification: **19/19** HA 2026.10 Core tests, Chromium desktop/mobile, source/API checks and HACS **9/9** passed. No production upgrade or true process restart claimed.

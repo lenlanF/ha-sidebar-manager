@@ -60,3 +60,9 @@ Imported snapshots hold the supported visible menu fields only. Unknown legacy m
 If the test instance develops a compatibility problem, **restore the full HA backup/snapshot taken in step 2**. This restores both the original integration files and HA configuration together, avoiding mismatched code and ConfigEntries. Merely importing the menu JSON is **not** a software downgrade and cannot restore old Python/JS files or deleted HA data.
 
 Before any future production upgrade, repeat all checks with the intended HA version and establish a verified full-backup rollback route. The current repository has not been released to production.
+
+## Additional compatibility notes (v0.1.0-dev.5)
+
+Original `panel_iframe` versions could create a menu record with only its title. A restored title-only entry retains an empty target URL, appears as **not configured** in the manager, and has no clickable HA sidebar panel until an administrator supplies a URL. The blank URL exception is for legacy restore only, not ordinary menu creation.
+
+When editing an old entry through the native Home Assistant options screen, unknown legacy options are preserved instead of silently discarded. The deprecated `proxy_access` feature remains deactivated for security. ConfigEntry persistence has been exercised through the HA native storage fixture, but production upgrade and an independent HA process restart still require verification on a separate installation.

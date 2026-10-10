@@ -88,3 +88,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 新增 HA HTTP 测试，确认两个前端 JS 文件可通过真实 HA 资源路由读取。
 - 自动化验证：[HA 2026.10 Core 16/16 + Chromium 桌面/手机](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016651)。
 - **仍未**实际在 HACS 已安装旧版插件的 HA 实例中执行覆盖升级、重启和全备份回退；不能将上述自动化测试视作生产升级验收。
+
+## 开发版 v0.1.0-dev.5：旧配置保存完整性
+
+- 原版菜单从 HA 原生选项页编辑时，不再清空新版本尚未识别的历史配置字段；旧的危险代理选项仍保持关闭。
+- 支持备份并恢复原版“只有菜单名称、尚未填写 URL”的记录，不强迫删除这类半配置菜单；正常新增入口仍要求填写 URL。
+- 使用 HA 原生存储测试验证配置可序列化保存，包括菜单 ID、名称、旧字段和新设置。这**不等于**已完成 HA 整机重启、生产迁移或完整回滚验证。
+- 自动化结果：[HA Core 19/19、Chromium 桌面/手机](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374)；[HACS 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396)。
+- 仍为未发布开发分支；旧插件实际 HACS 原地升级请先按升级与回滚文档在独立 HA 中验证。

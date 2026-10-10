@@ -146,3 +146,15 @@
 - Evidence: [HACS official validation](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38050016667) passed for code prior to this documentation/version bump; current development-branch version remains unreleased.
 - Not yet completed: real *in-place* upstream HACS repository swap, saved HA configuration across a process restart, browser using real HA frontend + WebSocket, Ingress restrictions, and verified full backup rollback.
 - No main merge and no GitHub Release. Resume real-source migration rehearsal before any release.
+
+## 2026-10-10 — Legacy data preservation, unconfigured menu restore, native storage (v0.1.0-dev.5)
+
+- Reviewed code and logs at v0.1.0-dev.4; discovered old-style OptionsFlow was replacing the entire options mapping, silently dropping unknown upstream options on edit. Fixed by merging old options with validated new values, while keeping the deprecated unsafe `proxy_access` explicitly disabled.
+- Added regression assertion that a legacy custom `old_option` survives native HA OptionsFlow edit, not only its `data` fields.
+- Identified a second data-loss case: the upstream plugin allows creating a title-only ConfigEntry before URL configuration; its menu backup could export the record, but restore rejected the empty URL. Added an explicit, restore-only `restore_unconfigured` path, allowing old URL-less entries to round-trip without appearing as clickable sidebar items. Normal menu creation still requires URL.
+- Extended backup preflight to accept blank URL placeholders only in restore context, while preserving normal URL validation and admin-only WebSocket authorization.
+- Added live HA Core tests for URL-less legacy entry JSON round-trip into a new ConfigEntry, its native OptionsFlow, and preserving old options.
+- Added HA native configuration storage regression using `hass_storage` and `freezer` to verify serialized `core.config_entries` retains title, entry ID, legacy `data` and `options`, and updated menu settings after the HA save delay. This is **not** proof of a complete independent HA process restart.
+- Evidence: `Source checks` https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374 — HA 2026.10 Core **19/19 passed**, source/isolated checks and Chromium desktop/mobile browser jobs passed, and HA API smoke passed.
+- Evidence: HACS official validator https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396 — **9/9 passed**.
+- Still pending: real upstream HACS in-place repository replacement with full config backup/rollback, full HA process restart in a separate environment, and Chromium UI connected to the real HA frontend/Ingress. No production deployment, main merge or official Release.
