@@ -71,7 +71,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _register_manager_once(hass)
     config = {**entry.data, **entry.options}
     url = config.get("url")
-    if url and not config.get("manager_only"):
+    if url and not config.get("manager_only") and config.get("enabled", True):
         # Historical proxy_access settings are retained but never executed.
         await async_register_panel(
             hass,
