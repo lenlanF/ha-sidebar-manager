@@ -709,3 +709,78 @@ async def test_manager_javascript_is_served_by_real_ha_http(hass, hass_client):
         assert response.status == 200, (file_name, response.status)
         content = await response.text()
         assert expected in content
+
+
+@pytest.mark.asyncio
+async def test_unconfigured_upstream_entry_exports_and_roundtrips(hass, hass_ws_client):
+    """Original plugin allowed title-only entries with no URL until configured."""
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    old = MockConfigEntry(
+        domain=DOMAIN, title="未设置地址",
+        data={"title": "未设置地址", "old_data": "keep"},
+        options={}, entry_id="original-no-url",
+    )
+    old.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(old.entry_id)
+    await hass.async_block_till_done()
+    assert not frontend.async_panel_exists(hass, old.entry_id)
+
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/backup"})
+    response = await ws.receive_json()
+    assert response["success"], response
+    snapshot = response["result"]
+    assert snapshot["items"][0]["url"] == ""
+    assert snapshot["items"][0]["entry_id"] == old.entry_id
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot
+    })
+    preview = await ws.receive_json()
+    assert preview["success"], preview
+    assert preview["result"]["counts"] == {
+        "create": 0, "update": 0, "skip": 1,
+    }
+
+    # Simulate a different HA instance: the snapshot ID does not exist here.
+    assert await hass.config_entries.async_remove(old.entry_id)
+    await hass.async_block_till_done()
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot,
+        "apply": True,
+    })
+    restored = await ws.receive_json()
+    assert restored["success"] and restored["result"]["applied"], restored
+    await hass.async_block_till_done()
+    entries = hass.config_entries.async_entries(DOMAIN)
+    assert len(entries) == 1
+    assert entries[0].title == "未设置地址"
+    assert entries[0].data["url"] == ""
+    assert not frontend.async_panel_exists(hass, entries[0].entry_id)
+
+
+@pytest.mark.asyncio
+async def test_unconfigured_legacy_options_form_keeps_unknown_metadata(hass):
+    """Editing a title-only entry must not require losing its old options."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    entry = MockConfigEntry(
+        domain=DOMAIN, title="未配置旧菜单",
+        data={"title": "未配置旧菜单"},
+        options={"old_option": "must-survive"}, entry_id="old-empty-options",
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    flow = await hass.config_entries.options.async_init(entry.entry_id)
+    assert flow["type"] == "form", flow
+    result = await hass.config_entries.options.async_configure(
+        flow["flow_id"], {
+            "url": "", "icon": "mdi:link", "mode": "0",
+            "require_admin": False, "enabled": True,
+        },
+    )
+    assert result["type"] == "create_entry", result
+    await hass.async_block_till_done()
+    assert entry.options["old_option"] == "must-survive"
+    assert entry.options["url"] == ""
