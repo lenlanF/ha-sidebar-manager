@@ -89,5 +89,5 @@ async def _update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if {**entry.data, **entry.options}.get('url'):
         frontend.async_remove_panel(hass, entry.entry_id)
-    entry.async_unload_callbacks()
+    # Home Assistant runs entry.async_on_unload callbacks automatically.
     return True
