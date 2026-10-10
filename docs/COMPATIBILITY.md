@@ -87,3 +87,9 @@ CI evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488
 Two live Chromium checks now run the installed HA frontend itself at `/ha-sidebar-manager`, with ephemeral test authentication and finalized onboarding state. Both desktop and mobile viewports rendered `ha-sidebar-manager-panel` via the HA frontend panel registry, obtained real `hass.connection`, and created a native ConfigEntry. Together with the four real HA HTTP/WS minimal-host tests, all **6/6 passed** in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091. HACS official repository checks **9/9** passed in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086.
 
 Still unverified: HACS repository source switching, true HAOS/Supervisor reboot, whole-system backup restore, physical phones, ingress/CSP and remote iframe policies.
+
+## v0.1.0-dev.11 — iframe safety, CSP/XFO and internal route
+
+Real Chromium ran the iframe mode 0/1 matrix against a genuine HA HTTP-served host and panel script. The allowed target was served directly by HA; X-Frame-Options DENY and CSP frame-ancestors none were injected only into disposable test iframe responses to avoid HA's HTTP middleware replacing headers. Chromium enforced the browser rules while visible safe new-window links remained available. This is not a Supervisor Ingress test or a policy bypass.
+
+The full authenticated HA SPA mode-3 test navigated to the integrations view. HA 2026.10 canonicalizes /config/integrations to /config/integrations/dashboard; the assertion now accepts this valid destination. Run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572: 12/12 live HA/Chromium, 19 Core functional tests, all CI jobs success. HACS 9/9: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573. Real HAOS/Supervisor Ingress remains untested.
