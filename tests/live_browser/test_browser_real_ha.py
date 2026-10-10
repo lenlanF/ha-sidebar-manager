@@ -179,3 +179,146 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             )
             await context.close()
             await browser.close()
+
+
+# Actual HA frontend registry queried over an authenticated browser WebSocket.
+FRONTEND_PANELS = r"""
+async ({token}) => {
+  const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") +
+                           location.host + "/api/websocket");
+  return await new Promise((resolve, reject) => {
+    const watchdog = setTimeout(() => {
+      ws.close();
+      reject(new Error("Timed out reading frontend panels"));
+    }, 15000);
+    function done(error, result) {
+      clearTimeout(watchdog);
+      ws.close();
+      error ? reject(error) : resolve(result);
+    }
+    ws.addEventListener("error", () => done(new Error("WebSocket connection failed")));
+    ws.addEventListener("message", (event) => {
+      const packet = JSON.parse(event.data);
+      if (packet.type === "auth_required") {
+        ws.send(JSON.stringify({type:"auth", access_token:token}));
+      } else if (packet.type === "auth_ok") {
+        ws.send(JSON.stringify({id:1, type:"get_panels"}));
+      } else if (packet.type === "auth_invalid") {
+        done(new Error("HA rejected browser token"));
+      } else if (packet.type === "result" && packet.id === 1) {
+        packet.success
+          ? done(null, packet.result)
+          : done(new Error(packet.error?.message || "get_panels failed"));
+      }
+    });
+  });
+}
+"""
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("width,height", [(1366, 768), (375, 812)])
+async def test_frontend_panels_real_ws_permissions_and_modules(
+    hass, hass_client, hass_access_token, width, height,
+):
+    """Test real HA frontend panel discovery and admin permission filters."""
+    from homeassistant.auth.const import GROUP_ID_READ_ONLY
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    bootstrap = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager",
+        data={"manager_only": True},
+        entry_id=f"frontend-manager-{width}",
+    )
+    public = MockConfigEntry(
+        domain=DOMAIN, title="开放的设备页",
+        data={"url": "https://example.org/device", "mode": "2",
+              "require_admin": False, "icon": "mdi:devices"},
+        entry_id=f"frontend-public-{width}",
+    )
+    private = MockConfigEntry(
+        domain=DOMAIN, title="管理员设备页",
+        data={"url": "/config/integrations", "mode": "3",
+              "require_admin": True, "icon": "mdi:lock"},
+        entry_id=f"frontend-private-{width}",
+    )
+    for entry in (bootstrap, public, private):
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    user = await hass.auth.async_create_user(
+        f"frontend-readonly-{width}", group_ids=[GROUP_ID_READ_ONLY]
+    )
+    refresh = await hass.auth.async_create_refresh_token(
+        user, client_id="https://sidebar-manager.test/"
+    )
+    readonly_token = hass.auth.async_create_access_token(refresh)
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            "/__sidebar_test_host.html",
+            str(Path(__file__).with_name("host.html")), False
+        )
+    ])
+    client = await hass_client()
+    manager_js = str(client.make_url("/panel_iframe_www/manager.js"))
+    menu_js = str(client.make_url("/panel_iframe_www/panel_iframe.js"))
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch(
+            headless=True, args=["--no-sandbox"]
+        )
+        context = await browser.new_context(
+            viewport={"width": width, "height": height}
+        )
+        page = await context.new_page()
+        try:
+            await page.goto(str(client.make_url("/__sidebar_test_host.html")))
+            admin = await page.evaluate(
+                FRONTEND_PANELS, {"token": hass_access_token}
+            )
+            readonly = await page.evaluate(
+                FRONTEND_PANELS, {"token": readonly_token}
+            )
+            assert "ha-sidebar-manager" in admin
+            assert "ha-sidebar-manager" not in readonly
+            assert public.entry_id in admin and public.entry_id in readonly
+            assert private.entry_id in admin and private.entry_id not in readonly
+
+            manager_meta = admin["ha-sidebar-manager"]
+            menu_meta = admin[public.entry_id]
+            assert manager_meta["require_admin"] is True
+            assert manager_meta["component_name"] == "custom"
+            assert manager_meta["config"]["_panel_custom"]["name"] == "ha-sidebar-manager-panel"
+            assert "/panel_iframe_www/manager.js" in manager_meta["config"]["_panel_custom"]["module_url"]
+            assert menu_meta["component_name"] == "custom"
+            assert menu_meta["config"]["_panel_custom"]["name"] == "ha-panel_iframe"
+            assert "/panel_iframe_www/panel_iframe.js" in menu_meta["config"]["_panel_custom"]["module_url"]
+
+            await page.add_script_tag(url=menu_js)
+            await page.evaluate(
+                """({panel}) => {
+                  const element = document.createElement("ha-panel_iframe");
+                  element.panel = {title: panel.title, config: panel.config};
+                  document.body.appendChild(element);
+                }""",
+                {"panel": menu_meta},
+            )
+            link = page.locator("ha-panel_iframe").locator("a[target='_blank']")
+            await expect(link).to_be_visible()
+            assert await link.get_attribute("rel") == "noopener noreferrer"
+            assert await link.get_attribute("href") == "https://example.org/device"
+
+            assert await hass.config_entries.async_unload(public.entry_id)
+            await hass.async_block_till_done()
+            after = await page.evaluate(FRONTEND_PANELS, {"token": readonly_token})
+            assert public.entry_id not in after
+            assert "ha-sidebar-manager" not in after
+            assert private.entry_id not in after
+
+            await page.add_script_tag(url=manager_js)
+            assert await page.evaluate(
+                "() => Boolean(customElements.get('ha-sidebar-manager-panel'))"
+            )
+        finally:
+            await context.close()
+            await browser.close()
