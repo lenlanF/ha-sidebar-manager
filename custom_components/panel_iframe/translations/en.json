@@ -1,31 +1,40 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "title": "侧边栏面板",
-                "description": "项目：https://github.com/shaonianzhentan/panel_iframe",
-                "data": {
-                    "title": "名称"
-                }
-            }
-        },
-        "error": {},
-        "abort": {}
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add sidebar item",
+        "description": "Create a sidebar shortcut. Legacy panel_iframe entries remain supported.",
+        "data": {
+          "title": "Name",
+          "url": "Target path or URL",
+          "icon": "MDI icon",
+          "mode": "Open mode",
+          "require_admin": "Administrator only"
+        }
+      }
     },
-    "options": {
-        "step": {
-            "user": {
-                "title": "侧边栏面板",
-                "description": "点击问号图标，查看所有可选图标，点击复制直接使用",
-                "data": {
-                    "icon": "图标",
-                    "url": "链接",
-                    "require_admin": "管理员可见",
-                    "mode": "显示模式",
-                    "proxy_access": "代理访问（不懂勿选）"
-                }
-            }
-        },
-        "error": {}
+    "error": {
+      "required": "This field is required.",
+      "invalid_internal_path": "Use a Home Assistant path beginning with /.",
+      "invalid_url": "Enter a valid URL or relative path."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Edit sidebar item",
+        "data": {
+          "url": "Target path or URL",
+          "icon": "MDI icon",
+          "mode": "Open mode",
+          "require_admin": "Administrator only"
+        }
+      }
+    },
+    "error": {
+      "required": "This field is required.",
+      "invalid_internal_path": "Use a Home Assistant path beginning with /.",
+      "invalid_url": "Enter a valid URL or relative path."
+    }
+  }
 }
