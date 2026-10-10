@@ -196,7 +196,7 @@ async def test_websocket_non_admin_cannot_manage_menus(hass, hass_ws_client):
     user = await hass.auth.async_create_user(
         "sidebar-readonly", group_ids=[GROUP_ID_READ_ONLY]
     )
-    token = await hass.auth.async_create_refresh_token(user)
+    token = await hass.auth.async_create_refresh_token(user, client_id="https://sidebar-manager.test/")
     access_token = hass.auth.async_create_access_token(token)
     ws = await hass_ws_client(hass, access_token=access_token)
 
