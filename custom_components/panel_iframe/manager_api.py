@@ -21,7 +21,8 @@ WS_PREFIX = "panel_iframe/manager/"
 
 
 def _entries(hass: HomeAssistant):
-    return hass.config_entries.async_entries(DOMAIN)
+    return [entry for entry in hass.config_entries.async_entries(DOMAIN)
+            if not entry.data.get("manager_only")]
 
 
 def _item(entry) -> dict[str, Any]:
@@ -82,7 +83,7 @@ async def ws_save(hass, connection, msg) -> None:
     try:
         if entry_id:
             entry = hass.config_entries.async_get_entry(entry_id)
-            if entry is None or entry.domain != DOMAIN:
+            if entry is None or entry.domain != DOMAIN or entry.data.get("manager_only"):
                 connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND,
                                       "Sidebar entry not found")
                 return
