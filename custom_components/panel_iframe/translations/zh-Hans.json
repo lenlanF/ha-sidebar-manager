@@ -1,0 +1,40 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "添加侧边栏菜单",
+        "description": "创建新的菜单入口，历史 panel_iframe 配置仍然保留。",
+        "data": {
+          "title": "菜单名称",
+          "url": "目标地址或 HA 内部路径",
+          "icon": "MDI 图标",
+          "mode": "打开模式",
+          "require_admin": "仅管理员可见"
+        }
+      }
+    },
+    "error": {
+      "required": "此项不能为空",
+      "invalid_internal_path": "请填写以 / 开头的 HA 内部路径",
+      "invalid_url": "请填写有效的网址或内部路径"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "编辑侧边栏菜单",
+        "data": {
+          "url": "目标地址或 HA 内部路径",
+          "icon": "MDI 图标",
+          "mode": "打开模式",
+          "require_admin": "仅管理员可见"
+        }
+      }
+    },
+    "error": {
+      "required": "此项不能为空",
+      "invalid_internal_path": "请填写以 / 开头的 HA 内部路径",
+      "invalid_url": "请填写有效的网址或内部路径"
+    }
+  }
+}
