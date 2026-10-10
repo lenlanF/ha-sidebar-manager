@@ -25,8 +25,32 @@ jobs:
           json.loads(Path("hacs.json").read_text(encoding="utf-8"))
           PY
       - name: Check JavaScript syntax
-        run: node --check custom_components/panel_iframe/www/panel_iframe.js
+        run: |
+          node --check custom_components/panel_iframe/www/panel_iframe.js
+          node --check custom_components/panel_iframe/www/manager.js
       - name: Install targeted test dependencies
         run: pip install pytest voluptuous
       - name: Run config validation tests with HA stubs
         run: python -m pytest -q tests/test_validation_isolated.py tests/test_manager_isolated.py
+
+  homeassistant-api-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install current Home Assistant Core
+        run: python -m pip install "homeassistant>=2026.9,<2026.11"
+      - name: Import integration and register command schema
+        run: |
+          python - <<'PY'
+          from custom_components.panel_iframe.config_flow import SidebarConfigFlow, SidebarOptionsFlow
+          from custom_components.panel_iframe.manager_api import ws_list, ws_save, ws_delete, ws_reorder
+          from custom_components.panel_iframe import async_setup_entry, async_unload_entry
+          for fn in (ws_list, ws_save, ws_delete, ws_reorder):
+              assert fn._ws_command.startswith("panel_iframe/manager/")
+          assert SidebarConfigFlow.VERSION == 1
+          print("Home Assistant API imports and WebSocket command registration: OK")
+          PY
