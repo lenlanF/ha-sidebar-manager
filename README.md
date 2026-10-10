@@ -17,7 +17,7 @@
 
 ## 已知限制
 
-- **未在实际 HA 服务器浏览器中验证完整安装、增删改和侧边栏显示。** CI 的代码检查、隔离单元测试和 Core API 导入检查不等于实机验收。
+- **已在独立 HA 2026.10 Core 测试实例中完成 5 项集成测试（包括真实 WebSocket CRUD 和只读用户拒绝访问），但尚未进行真实浏览器与生产设备验收。**
 - 当前上下排序只控制管理列表，HA 左侧菜单排序可能被用户自身的设置覆盖。
 - 尚无菜单分组、拖拽排序、按指定用户显示、备份导入导出和自动识别所有集成。
 - 旧的 MDI 图标预览静态资源未完整迁移，但新的管理界面不再依赖这些资源。
@@ -46,3 +46,10 @@
 ## License
 
 MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE) 中。
+
+## 验证记录（2026-10-10）
+
+- HA Core 配置与 WebSocket 功能测试：**5/5 通过** — [GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040925266)。
+- HACS 官方结构校验：**8/9 通过**，品牌图标已符合要求，唯一剩余项是仓库 Topics — [HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040715657)。
+- 仓库所有者可在 GitHub About 中设置 Topics：`home-assistant`、`homeassistant`、`hacs`、`sidebar`、`smart-home`。
+- 上述测试不是 HA 前端浏览器、Android/iOS 或原插件生产升级的验收证据；正式 HACS 版本仍未发布。

@@ -54,3 +54,13 @@
 - Added Node checks for internal navigation and URL/iframe mode behavior.
 - Fixed a regression allowing removal of the manager bootstrap entry from the management API.
 - Updated GitHub Actions and validated source + Core API import jobs successfully (run 38039794524).
+
+## Unreleased — HA integration validation and HACS readiness (2026-10-10)
+
+- Fixed deprecated config-entry unload callback invocation discovered by HA 2026.10 functional tests.
+- Added real HA tests for manager setup, legacy entry reload, native menu setup, admin WebSocket CRUD, and non-admin access denial.
+- Added integration branding PNG and official HACS repository validation.
+- Updated minimum advertised Home Assistant support to 2026.10.0.
+- HA 2026.10 functional suite 5/5 passed; HACS validation 8/9 passed (missing repository Topics setting).
+
+**Not released:** browser/mobile and production upgrade validations are still required.

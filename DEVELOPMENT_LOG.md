@@ -83,3 +83,16 @@
 - Updated Actions versions and added run concurrency to stop duplicate work.
 - Verified run **38039794524** at https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38039794524: `syntax-and-tests` = success; `homeassistant-api-smoke` = success.
 - Still not verified: installing/operating against a real HA browser and full ConfigEntry runtime, upgrade migration, HACS package or user-level permissions. Keep this work on development branch until those gates pass.
+
+## 2026-10-10 — HA 2026.10 functional acceptance and HACS validation
+
+- Added integration test fixtures that copy `panel_iframe` into a disposable HA config directory and install the exact frontend dependency used by HA 2026.10.
+- Fixed a real compatibility defect exposed by tests: `ConfigEntry.async_unload_callbacks()` no longer exists; Home Assistant performs `async_on_unload` callbacks itself.
+- Tested real HA config flows, first-install manager bootstrap, legacy multi-entry setup and reloading, CRUD via authenticated WebSocket, and read-only user's access denial.
+- Evidence: **5 Home Assistant Core functional tests passed**, plus separate syntax/isolated checks and HA API import smoke; https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040925266
+- Added `custom_components/panel_iframe/brand/icon.png` to satisfy HACS integration branding.
+- HACS action: 8 of 9 checks passed after brand addition; only GitHub repository Topics missing (repository setting; code cannot supply it). Evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040715657
+- Updated HACS minimum supported HA to 2026.10.0, the only HA release tested with functional checks.
+- CI environment corrections: Python 3.14 required, install `home-assistant-frontend==20260930.2`, provide an OAuth client ID for the test read-only user.
+- **Not yet verified:** browser rendering of manager UI, end-to-end HACS install in an actual user HA environment, real backup and rollback over installed upstream HACS integration, mobile Ingress and CSP behavior.
+- No merge to main; no release or deployment.
