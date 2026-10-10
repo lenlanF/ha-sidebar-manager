@@ -1,10 +1,13 @@
-# Test notes
+# Testing tiers
 
-These tests are regression specifications, not evidence of successful HA integration tests.
+**Executed in GitHub Actions (see DEVELOPMENT_LOG.md for exact run IDs):**
+- Python syntax compilation, JSON parsing, JavaScript syntax.
+- Isolated `tests/test_validation_isolated.py` and `tests/test_manager_isolated.py` with fake Home Assistant objects.
+- Core import smoke on a Home Assistant-compatible Python interpreter.
 
-- Unit checks: `python -m pytest tests/test_config_validation.py`
-- Real HA environment: config flow create/options/delete, multiple entries, update reload, old-entry migration and sidebar navigation.
-- Browser tests: desktop/mobile, 2025.12+ and a supported recent 2026 HA release.
-- Security checks: no unauthenticated proxy route; iframe restrictions and internal-route allowlist design.
+**Not yet executed:**
+- Running HA instance with integration installation, multiple ConfigEntry reloads, real WebSocket CRUD and removal.
+- Browser/mobile UI tests, Ingress routing, permissions and CSP/iframe behavior.
+- Upgrade-over-legacy and rollback testing.
 
-No test command has yet been executed by CI or a connected HA instance in this repository.
+Isolated tests are deliberately not labeled as full integration tests.
