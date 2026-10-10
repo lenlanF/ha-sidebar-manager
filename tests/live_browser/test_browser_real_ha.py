@@ -261,8 +261,11 @@ async def test_frontend_panels_real_ws_permissions_and_modules(
         )
     ])
     client = await hass_client()
-    manager_js = str(client.make_url("/panel_iframe_www/manager.js"))
-    menu_js = str(client.make_url("/panel_iframe_www/panel_iframe.js"))
+    # HA must serve its actual SPA bootstrap at the registered manager route.
+    for route in ("/ha-sidebar-manager", f"/{public.entry_id}"):
+        response = await client.get(route)
+        assert response.status == 200, (route, response.status)
+        assert "<html" in (await response.text()).lower()
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(
             headless=True, args=["--no-sandbox"]
@@ -294,7 +297,9 @@ async def test_frontend_panels_real_ws_permissions_and_modules(
             assert menu_meta["config"]["_panel_custom"]["name"] == "ha-panel_iframe"
             assert "/panel_iframe_www/panel_iframe.js" in menu_meta["config"]["_panel_custom"]["module_url"]
 
-            await page.add_script_tag(url=menu_js)
+            # Load the exact module URL advertised by HA, not a fixture path.
+            menu_module = menu_meta["config"]["_panel_custom"]["module_url"]
+            await page.add_script_tag(url=str(client.make_url(menu_module)))
             await page.evaluate(
                 """({panel}) => {
                   const element = document.createElement("ha-panel_iframe");
@@ -315,7 +320,8 @@ async def test_frontend_panels_real_ws_permissions_and_modules(
             assert "ha-sidebar-manager" not in after
             assert private.entry_id not in after
 
-            await page.add_script_tag(url=manager_js)
+            manager_module = manager_meta["config"]["_panel_custom"]["module_url"]
+            await page.add_script_tag(url=str(client.make_url(manager_module)))
             assert await page.evaluate(
                 "() => Boolean(customElements.get('ha-sidebar-manager-panel'))"
             )
