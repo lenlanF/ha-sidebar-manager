@@ -20,6 +20,7 @@ def _fields(defaults: dict[str, Any], *, include_title: bool) -> vol.Schema:
     fields[vol.Required("icon", default=defaults.get("icon", "mdi:link-box-outline"))] = str
     fields[vol.Required("mode", default=str(defaults.get("mode", "0")))] = vol.In(MODES)
     fields[vol.Required("require_admin", default=defaults.get("require_admin", False))] = bool
+    fields[vol.Required("enabled", default=defaults.get("enabled", True))] = bool
     return vol.Schema(fields)
 
 
