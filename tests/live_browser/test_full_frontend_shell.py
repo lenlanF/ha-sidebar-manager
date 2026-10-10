@@ -8,6 +8,7 @@ import json
 
 import pytest
 from homeassistant import setup
+from homeassistant.components.onboarding.const import STEPS
 from playwright.async_api import async_playwright, expect
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -21,6 +22,12 @@ async def test_full_ha_frontend_shell_opens_sidebar_manager(
 ):
     """Start Home Assistant's actual SPA at its registered manager URL."""
     assert await setup.async_setup_component(hass, "frontend", {})
+    # pytest HA starts as a fresh, never-onboarded server. Only the isolated
+    # fixture is marked onboarded; otherwise HA correctly redirects the real
+    # frontend to /onboarding.html before our panel can appear.
+    onboarding = hass.data["onboarding"]
+    onboarding.steps["done"] = list(STEPS)
+    onboarding.onboarded = True
     bootstrap = MockConfigEntry(
         domain=DOMAIN, title="HA Sidebar Manager",
         data={"manager_only": True}, entry_id=f"shell-bootstrap-{width}",
