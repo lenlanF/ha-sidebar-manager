@@ -55,3 +55,19 @@
 - Added an isolated test module that extracts the pure validator with AST; **does not substitute for live Home Assistant config flow tests**.
 - No HA runtime verification has been performed and no GitHub Actions result has been inspected.
 - Known blockers: real HA testing, add-on support validation, manager visual UI, migration and permissions, leftover old web assets and dependency cleanup. No HACS release.
+
+
+## 2026-10-10 — Visual management UI and native CRUD
+
+- Added `custom_components/panel_iframe/manager_api.py` with administrator-only WebSocket list/save/delete/reorder commands. Saves use HA ConfigEntry APIs, not an additional database.
+- Added `www/manager.js`, a mobile-responsive management page with menu search, add/edit/delete, icon, title, URL, mode and administrator-visibility controls.
+- Registered one shared `/ha-sidebar-manager` admin panel, alongside original `panel_iframe` item panels.
+- Integrated existing legacy ConfigEntry records via combined `data` and `options` values.
+- Changed setup flow: first install can create `manager_only` bootstrap config entry without a dummy sidebar shortcut. Manager bootstrap entries are excluded from CRUD list and protected from deletion by management WebSocket methods.
+- Added simplified Chinese and English setup and option translations.
+- Recorded that management list sorting is separate from HA native per-user sidebar ordering; drag/drop, groups and custom user visibility are **not implemented**.
+- Added isolated WebSocket CRUD tests covering legacy configs, admin decorators, invalid delete/reorder and manager entry protection.
+- CI: `Source checks` succeeded on source branch through `bdc06152...`, run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38039492747
+- CI: Home Assistant Core API import smoke first failed because Python 3.13 cannot install HA 2026.10 (requires Python >=3.14.2). Corrected to Python 3.14 and subsequently passed, https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38039393859
+- The CI checks do **not** exercise a running HA frontend or real ConfigEntry persistence. No HACS release, production installation, or migration was performed.
+- Next: run complete test instance with multiple legacy entries, add/edit/delete and reload; verify mobile frontend, paths and CSP; prepare safe backup/rollback and HACS validation before merging.
