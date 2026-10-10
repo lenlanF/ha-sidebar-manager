@@ -108,7 +108,11 @@ class SidebarOptionsFlow(OptionsFlow):
         if user_input is not None:
             values, errors = _validate(user_input)
             if not errors:
-                return self.async_create_entry(title="", data=values)
+                # Keep unrelated upstream options so editing an old menu does not
+                # erase metadata unknown to this release. Unsafe proxy is always off.
+                return self.async_create_entry(
+                    title="", data={**self.config_entry.options, **values}
+                )
         else:
             errors = {}
         defaults = dict(self.config_entry.data)
