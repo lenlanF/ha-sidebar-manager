@@ -44,3 +44,14 @@
 - Source files re-fetched after writes for review.
 - **Unverified:** HA runtime, browser integration, CI, HACS packaging, binary MDI assets, proxy security rewrite, visual management UI.
 - Next: make a real, installable test candidate; run HA integration and browser tests; fix discovered errors before merging to main.
+
+
+## 2026-10-10 — Frontend opening-mode hardening & CI
+
+- Replaced legacy nested HTML redirect approach with direct iframe rendering in the compatibility web component.
+- New-tab mode now presents a user-initiated link (no unsolicited window.open calls); HTTP iframe targets in HTTPS instances are presented as external links.
+- Internal-route navigation remains in updated() rather than render(); mode 3 rejects non-relative URLs.
+- Added CI source checks: Python compilation, JSON parsing, node JS syntax check, isolated validation regression tests.
+- Added an isolated test module that extracts the pure validator with AST; **does not substitute for live Home Assistant config flow tests**.
+- No HA runtime verification has been performed and no GitHub Actions result has been inspected.
+- Known blockers: real HA testing, add-on support validation, manager visual UI, migration and permissions, leftover old web assets and dependency cleanup. No HACS release.
