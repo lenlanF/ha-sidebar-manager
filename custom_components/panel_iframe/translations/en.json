@@ -2,8 +2,14 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add sidebar item",
-        "description": "Create a sidebar shortcut. Legacy panel_iframe entries remain supported.",
+        "title": "Set up Sidebar Manager",
+        "description": "Choose Install manager to use the visual UI. You can also create individual legacy-style shortcuts.",
+        "data": {
+          "setup_type": "Action"
+        }
+      },
+      "item": {
+        "title": "Create sidebar item",
         "data": {
           "title": "Name",
           "url": "Target path or URL",
@@ -17,6 +23,9 @@
       "required": "This field is required.",
       "invalid_internal_path": "Use a Home Assistant path beginning with /.",
       "invalid_url": "Enter a valid URL or relative path."
+    },
+    "abort": {
+      "already_configured": "Manager already installed"
     }
   },
   "options": {
@@ -35,6 +44,9 @@
       "required": "This field is required.",
       "invalid_internal_path": "Use a Home Assistant path beginning with /.",
       "invalid_url": "Enter a valid URL or relative path."
+    },
+    "abort": {
+      "manage_in_sidebar": "Manage your sidebar entries from the Sidebar Manager panel"
     }
   }
 }
