@@ -787,6 +787,61 @@ async def test_unconfigured_legacy_options_form_keeps_unknown_metadata(hass):
 
 
 @pytest.mark.asyncio
+async def test_manager_can_edit_unconfigured_legacy_entry_without_url(hass, hass_ws_client):
+    """A title-only upstream menu can be toggled, but a configured URL cannot be erased."""
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    old = MockConfigEntry(
+        domain=DOMAIN, title="待配置菜单",
+        data={"title": "待配置菜单", "old_data": "keep"},
+        options={"old_option": "keep"}, entry_id="upstream-unconfigured-manager",
+    )
+    old.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(old.entry_id)
+    await hass.async_block_till_done()
+
+    ws = await hass_ws_client(hass)
+    payload = {
+        "type": "panel_iframe/manager/save",
+        "entry_id": old.entry_id,
+        "title": "未配置菜单（已暂停）",
+        "url": "",
+        "icon": "mdi:pause",
+        "mode": "0",
+        "require_admin": False,
+        "enabled": False,
+    }
+    await ws.send_json_auto_id(payload)
+    response = await ws.receive_json()
+    assert response["success"], response
+    await hass.async_block_till_done()
+    assert old.title == "未配置菜单（已暂停）"
+    assert old.options["enabled"] is False
+    assert old.options["url"] == ""
+    assert old.options["old_option"] == "keep"
+    assert old.data["old_data"] == "keep"
+    assert not frontend.async_panel_exists(hass, old.entry_id)
+
+    # URL-less entries are a legacy-edit exception, not a normal creation mode.
+    await ws.send_json_auto_id({k: v for k, v in payload.items() if k != "entry_id"})
+    response = await ws.receive_json()
+    assert not response["success"], response
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+
+    # Once configured, a later edit must not turn it into an empty-URL menu.
+    await ws.send_json_auto_id({**payload, "url": "/config/logs", "enabled": True})
+    response = await ws.receive_json()
+    assert response["success"], response
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, old.entry_id)
+    await ws.send_json_auto_id({**payload, "url": "", "enabled": False})
+    response = await ws.receive_json()
+    assert not response["success"], response
+    assert old.options["url"] == "/config/logs"
+
+
+@pytest.mark.asyncio
 async def test_legacy_menu_changes_persist_in_ha_native_storage(
     hass, hass_storage, freezer
 ):
