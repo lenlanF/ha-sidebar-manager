@@ -175,3 +175,43 @@ async def test_real_websocket_crud(hass, hass_ws_client):
     })
     denied = await ws.receive_json()
     assert denied["success"] is False, denied
+
+
+@pytest.mark.asyncio
+async def test_websocket_non_admin_cannot_manage_menus(hass, hass_ws_client):
+    """Read-only users must be denied by backend, not just the manager UI."""
+    from homeassistant.auth.const import GROUP_ID_READ_ONLY
+
+    await setup.async_setup_component(hass, "frontend", {})
+    manager = MockConfigEntry(
+        domain=DOMAIN,
+        title="HA Sidebar Manager",
+        data={"manager_only": True},
+        entry_id="mgr-nonadmin-test",
+    )
+    manager.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(manager.entry_id)
+    await hass.async_block_till_done()
+
+    user = await hass.auth.async_create_user(
+        "sidebar-readonly", group_ids=[GROUP_ID_READ_ONLY]
+    )
+    token = await hass.auth.async_create_refresh_token(user)
+    access_token = hass.auth.async_create_access_token(token)
+    ws = await hass_ws_client(hass, access_token=access_token)
+
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/list"})
+    response = await ws.receive_json()
+    assert response["success"] is False, response
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/save",
+        "title": "Forbidden",
+        "url": "/config/integrations",
+        "icon": "mdi:devices",
+        "mode": "3",
+        "require_admin": False,
+    })
+    response = await ws.receive_json()
+    assert response["success"] is False, response
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
