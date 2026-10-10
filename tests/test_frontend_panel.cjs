@@ -61,6 +61,17 @@ popup.panel={title:"网站",config:{mode:"2",url:"https://example.org/"}};
 assert.ok(popup.shadowRoot.innerHTML.includes('target="_blank"'));
 assert.ok(!popup.shadowRoot.innerHTML.includes("<iframe"));
 
+const mixed=new Panel();
+mixed.panel={title:"HTTP legacy service",config:{mode:"0",url:"http://nas.local:8080/"}};
+assert.ok(mixed.shadowRoot.innerHTML.includes('target="_blank"'), "HTTPS parent must provide a mixed-content fallback");
+assert.ok(!mixed.shadowRoot.innerHTML.includes("<iframe"), "HTTPS parent must never force an HTTP iframe");
+
+const ingress=new Panel();
+ingress.panel={title:"HAOS test path",config:{mode:"0",url:"/api/hassio_ingress/test-only/"}};
+assert.ok(ingress.shadowRoot.innerHTML.includes('src="/api/hassio_ingress/test-only/"'));
+assert.ok(ingress.shadowRoot.innerHTML.includes('class="open-link"'), "ingress-like paths retain a manual fallback");
+assert.ok(!ingress.shadowRoot.innerHTML.includes("Authorization:"), "frontend does not fabricate ingress auth");
+
 const invalid=new Panel();
 invalid.panel={title:"不合法",config:{mode:"0",url:"javascript:alert(1)"}};
 assert.ok(invalid.shadowRoot.innerHTML.includes("URL 无效"));
