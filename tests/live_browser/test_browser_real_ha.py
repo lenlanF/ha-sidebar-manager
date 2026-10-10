@@ -97,14 +97,25 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
         )
         page = await context.new_page()
         try:
-            # Visiting our registered JS resource gives the page a real HA
-            # origin; set_content provides only the minimal custom-element host.
-            await page.goto(module_url)
-            await page.set_content(
-                '<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" '
-                'content="width=device-width,initial-scale=1"></head>'
-                '<body style="margin:0;height:100vh"></body></html>'
-            )
+            # Serve only a minimal UTF-8 HTML HOST via Playwright. The JS
+            # resource and WebSocket still come from the real HA server.
+            # Navigating directly to application/javascript would force a
+            # non-UTF-8 document encoding before dynamic meta tags are parsed.
+            async def serve_host(route):
+                await route.fulfill(
+                    status=200,
+                    content_type="text/html; charset=utf-8",
+                    body=(
+                        '<!doctype html><html lang="zh"><head>'
+                        '<meta charset="utf-8">'
+                        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                        '</head><body style="margin:0;height:100vh"></body></html>'
+                    ),
+                )
+
+            await page.route("**/__sidebar_test_host", serve_host)
+            host_url = str(client.make_url("/__sidebar_test_host"))
+            await page.goto(host_url)
             await page.add_script_tag(url=module_url)
             assert await page.evaluate(CONNECT, {"token": hass_access_token})
 
