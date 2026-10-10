@@ -1,8 +1,9 @@
 """Real Chromium iframe/CSP compatibility checks against HA's own HTTP server.
 
-These tests emulate target pages' response security headers on a disposable HA
-HTTP endpoint. This does *not* provide a fake Supervisor ingress service, nor
-does it modify target websites' CSP or bypass iframe protection.
+The browser host and allowed iframe content use disposable HA HTTP endpoints.
+Restrictive X-Frame-Options / CSP responses are injected only for test iframes
+using Playwright routing, because HA middleware may replace security headers.
+No Supervisor ingress service is emulated and no iframe restriction is bypassed.
 """
 from pathlib import Path
 
