@@ -40,7 +40,7 @@ def make_backup(items: list[dict[str, Any]], exported_at: str) -> dict[str, Any]
 def prepare_restore(
     backup: Any,
     existing: list[dict[str, Any]],
-    validate: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, str]]],
+    validate: Callable[..., tuple[dict[str, Any], dict[str, str]]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Validate entire file, then plan safe create/update/skip operations.
 
@@ -103,7 +103,9 @@ def prepare_restore(
             raise BackupValidationError(f"item_{index}_invalid_flags")
 
         payload = {key: raw[key] for key in BACKUP_FIELDS if key != "menu_order"}
-        values, errors = validate(payload)
+        # Older upstream config entries may exist without any URL. A menu
+        # snapshot must preserve them as unconfigured placeholders.
+        values, errors = validate(payload, allow_unconfigured=True)
         if errors:
             raise BackupValidationError(f"item_{index}_validation_{','.join(errors)}")
         if values.get("title") != raw["title"].strip():
