@@ -33,3 +33,14 @@
 - Outstanding: MDI binary assets, multi-entry live tests, internal-route redirect rewrite, visual manager UI, security review, package validation.
 - Verification: GitHub writes confirmed; **no HA runtime test or distributable package yet**.
 - Do not merge or release until the prerequisites in `docs/COMPATIBILITY.md` are verified.
+
+
+## 2026-10-10 — Complete initial-entry form and route lifecycle
+
+- New config entry flow now collects title, target URL, MDI icon, display mode, administrator flag in one step. It validates empty values and internal paths; implicit proxy is disabled.
+- Existing entries use combined data + options, preserving historical titles and old options.
+- Frontend internal routing no longer mutates history from render(); navigation is guarded in updated().
+- Added config validation test specifications (not executed yet).
+- Source files re-fetched after writes for review.
+- **Unverified:** HA runtime, browser integration, CI, HACS packaging, binary MDI assets, proxy security rewrite, visual management UI.
+- Next: make a real, installable test candidate; run HA integration and browser tests; fix discovered errors before merging to main.
