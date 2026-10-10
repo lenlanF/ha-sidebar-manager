@@ -71,3 +71,15 @@
 - CI: Home Assistant Core API import smoke first failed because Python 3.13 cannot install HA 2026.10 (requires Python >=3.14.2). Corrected to Python 3.14 and subsequently passed, https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38039393859
 - The CI checks do **not** exercise a running HA frontend or real ConfigEntry persistence. No HACS release, production installation, or migration was performed.
 - Next: run complete test instance with multiple legacy entries, add/edit/delete and reload; verify mobile frontend, paths and CSP; prepare safe backup/rollback and HACS validation before merging.
+
+
+## 2026-10-10 — Frontend independence, dead-code removal, and regression fix
+
+- Rewrote legacy menu display web component as a native HTMLElement. It no longer waits for the lazily loaded `ha-panel-lovelace` Lit component.
+- Preserved four display modes, internal route navigation, explicit new-window links, and invalid-URL protections.
+- Removed obsolete `http_proxy.py` and unused `www/index.html` redirect shell. The unsafe proxy is not registered.
+- Added a dependency-free Node regression to verify internal navigation executes once, external URLs cannot be internal-route targets, and iframe/new-tab modes behave as intended.
+- Added bootstrap manager test which discovered a real defect: the deletion endpoint did not guard `manager_only` entries. Fixed deletion authorization on that entry and reran tests.
+- Updated Actions versions and added run concurrency to stop duplicate work.
+- Verified run **38039794524** at https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38039794524: `syntax-and-tests` = success; `homeassistant-api-smoke` = success.
+- Still not verified: installing/operating against a real HA browser and full ConfigEntry runtime, upgrade migration, HACS package or user-level permissions. Keep this work on development branch until those gates pass.
