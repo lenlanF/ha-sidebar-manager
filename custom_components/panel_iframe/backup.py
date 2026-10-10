@@ -119,7 +119,10 @@ def prepare_restore(
                      and x["entry_id"] not in targeted_ids]
             if exact:
                 old = exact[0]
-                action = "skip"
+                # A cross-instance match must restore changed icon, visibility,
+                # enablement and order instead of silently skipping them.
+                action = ("skip" if all(old.get(k) == values[k] for k in BACKUP_FIELDS)
+                          else "update")
             elif any(x.get("url") != values["url"] for x in title_matches):
                 raise BackupValidationError(f"item_{index}_title_conflict")
             else:
