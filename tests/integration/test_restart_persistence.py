@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from homeassistant import setup
 from homeassistant.components import frontend
-from homeassistant.config_entries import ConfigEntries
+from homeassistant.config_entries import ConfigEntries, ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
@@ -117,10 +117,15 @@ async def test_new_python_process_loads_original_ids_and_settings(hass, hass_sto
     assert actual["upgrade-persist-empty"].options == {}
     assert actual["upgrade-persist-manager"].data["manager_only"] is True
 
+    # Setting up frontend can trigger HA to load every waiting entry; do
+    # not call async_setup twice on an entry that is already LOADED.
     assert await setup.async_setup_component(hass, "frontend", {})
-    for entry in actual.values():
-        assert await entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    for entry in actual.values():
+        if entry.state is ConfigEntryState.NOT_LOADED:
+            assert await entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert all(e.state is ConfigEntryState.LOADED for e in actual.values())
     assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
     assert not frontend.async_panel_exists(hass, legacy.entry_id)
     assert not frontend.async_panel_exists(hass, "upgrade-persist-empty")
