@@ -77,6 +77,14 @@ async function main() {
   assert.equal(entries[0].require_admin, true);
   assert.equal(ui.shadowRoot.querySelectorAll(".entry").length,1);
 
+  button("toggle").click();
+  await tick();
+  assert.equal(entries[0].enabled, false, "disabling persists state");
+  assert.ok(ui.shadowRoot.textContent.includes("已停用"));
+  button("toggle").click();
+  await tick();
+  assert.equal(entries[0].enabled, true, "re-enabling restores state");
+
   button("edit").click();
   const editor = ui.shadowRoot.querySelector("form");
   editor.elements.namedItem("title").value = "新自动化";
