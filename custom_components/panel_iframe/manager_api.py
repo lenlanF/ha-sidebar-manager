@@ -76,24 +76,33 @@ def ws_list(hass, connection, msg) -> None:
 @websocket_api.async_response
 async def ws_save(hass, connection, msg) -> None:
     """Create via the native config flow or update an existing config entry."""
+    entry_id = msg.get("entry_id")
+    entry = None
+    if entry_id:
+        entry = hass.config_entries.async_get_entry(entry_id)
+        if entry is None or entry.domain != DOMAIN or entry.data.get("manager_only"):
+            connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND,
+                                  "Sidebar entry not found")
+            return
+
     payload = {key: msg[key] for key in
                ("title", "url", "icon", "mode", "require_admin")}
     if "enabled" in msg:
         payload["enabled"] = msg["enabled"]
-    values, errors = _validate(payload)
+    # Original panel_iframe can have title-only entries. Permit keeping a
+    # missing URL while editing THAT entry, but never allow newly created
+    # entries or already configured menus to have their URLs cleared.
+    current = {**entry.data, **entry.options} if entry else {}
+    values, errors = _validate(
+        payload, allow_unconfigured=bool(entry and not current.get("url"))
+    )
     if errors:
         connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT,
                               ", ".join(f"{key}: {error}" for key, error in errors.items()))
         return
 
-    entry_id = msg.get("entry_id")
     try:
-        if entry_id:
-            entry = hass.config_entries.async_get_entry(entry_id)
-            if entry is None or entry.domain != DOMAIN or entry.data.get("manager_only"):
-                connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND,
-                                      "Sidebar entry not found")
-                return
+        if entry is not None:
             title = values.pop("title")
             updated_options = {**entry.options, **values}
             old_title = entry.title
