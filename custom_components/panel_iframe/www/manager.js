@@ -130,7 +130,9 @@
         + MODES.map(([value,label]) => '<option value="' + value + '"' + (value === selected ? " selected" : "") + '>' + label + '</option>').join("")
         + '</select></div>'
         + '<div><label>访问限制</label><label class="check"><input type="checkbox" name="require_admin"'
-        + (item.require_admin ? " checked" : "") + '>仅管理员可见</label></div></div>'
+        + (item.require_admin ? " checked" : "") + '>仅管理员可见</label></div>'
+        + '<div><label>菜单状态</label><label class="check"><input type="checkbox" name="enabled"'
+        + (item.enabled !== false ? " checked" : "") + '>启用菜单</label></div></div>'
         + '<div class="form-actions"><button type="button" data-action="cancel">取消</button>'
         + '<button class="primary" type="submit"' + (this._busy ? " disabled" : "") + '>保存菜单</button></div></form>';
     }
@@ -143,10 +145,11 @@
       return '<div class="card entry" data-search="' + escapeHTML(search) + '"' + (visible ? "" : " hidden") + '>'
         + '<div class="glyph"><ha-icon icon="' + escapeHTML(item.icon) + '"></ha-icon></div>'
         + '<div class="info"><strong>' + escapeHTML(item.title) + '</strong><div class="target">' + escapeHTML(target) + '</div>'
-        + '<span class="badge">' + escapeHTML(mode) + (item.require_admin ? " · 管理员" : "") + '</span></div>'
+        + '<span class="badge">' + escapeHTML(mode) + (item.require_admin ? " · 管理员" : "") + (item.enabled === false ? " · 已停用" : "") + '</span></div>'
         + '<div class="toolbar">'
         + '<button type="button" data-action="up" data-id="' + escapeHTML(item.entry_id) + '"' + (index === 0 ? " disabled" : "") + ' aria-label="上移">↑</button>'
         + '<button type="button" data-action="down" data-id="' + escapeHTML(item.entry_id) + '"' + (index === this._entries.length-1 ? " disabled" : "") + ' aria-label="下移">↓</button>'
+        + '<button type="button" data-action="toggle" data-id="' + escapeHTML(item.entry_id) + '">' + (item.enabled === false ? "启用" : "停用") + '</button>'
         + '<button type="button" data-action="edit" data-id="' + escapeHTML(item.entry_id) + '">编辑</button>'
         + '<button type="button" class="danger" data-action="delete" data-id="' + escapeHTML(item.entry_id) + '">删除</button>'
         + '</div></div>';
@@ -196,6 +199,19 @@
         this._showForm = Boolean(this._editing);
         return this._render();
       }
+      if (action === "toggle") {
+        const item = this._entries.find(row => row.entry_id === entryId);
+        if (!item) return;
+        return this._mutate("save", {
+          entry_id: item.entry_id,
+          title: item.title,
+          url: item.url,
+          icon: item.icon,
+          mode: String(item.mode),
+          require_admin: Boolean(item.require_admin),
+          enabled: item.enabled === false,
+        }, item.enabled === false ? "菜单已启用" : "菜单已停用");
+      }
       if (action === "delete") {
         const item = this._entries.find(row => row.entry_id === entryId);
         if (!item || !confirm('确认删除菜单“' + item.title + '”？此操作也会删除对应的 HA 集成配置记录。')) return;
@@ -222,7 +238,8 @@
         icon: String(fields.get("icon") || "").trim(),
         url: String(fields.get("url") || "").trim(),
         mode: String(fields.get("mode") || "3"),
-        require_admin: form.elements.namedItem("require_admin").checked
+        require_admin: form.elements.namedItem("require_admin").checked,
+        enabled: form.elements.namedItem("enabled").checked
       };
       if (this._editing?.entry_id) payload.entry_id = this._editing.entry_id;
       this._draft = payload;
