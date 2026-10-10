@@ -138,3 +138,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 [完整 HA 浏览器及功能测试：6/6 + 19/19](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091) · [HACS：9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086)
 
 下一步仍需要验证实际 HACS 安装仓库切换、Supervisor 整机备份恢复、Ingress/CSP 和实体设备。开发分支保持未发布。
+
+## 开发版 v0.1.0-dev.11：嵌入页面备用打开与安全测试
+
+嵌入模式 0 和全屏模式 1 均新增可见且可用键盘操作的**「新窗口打开」**入口。当目标页面的 CSP、X-Frame-Options 或浏览器规则阻止 iframe 时，用户可以手动打开原始页面，而不必删除菜单。链接始终使用安全的 noreferrer/noopener；HTTPS 页面不会强制嵌入 HTTP 页面。
+
+已在真实 HA HTTP + Chromium 环境中验证允许嵌入、XFO DENY 和 CSP frame-ancestors none 的行为，以及 HA 内部路由跳转（HA 会将 /config/integrations 规范化为 /config/integrations/dashboard）。**12/12 浏览器测试、19/19 常规 Core 测试通过**：[Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572)，[HACS 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573)。
+
+[Ingress、iframe 使用限制与 HAOS 验收清单](docs/INGRESS_AND_EMBEDDING.md)。请注意：没有 Supervisor 的 Core 测试不能等同于真实 Ingress 附加组件验收；当前仍不发布。
