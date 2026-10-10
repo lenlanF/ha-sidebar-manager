@@ -15,7 +15,8 @@
           "url": "目标地址或内部路径",
           "icon": "MDI 图标",
           "mode": "打开模式",
-          "require_admin": "仅管理员可见"
+          "require_admin": "仅管理员可见",
+          "enabled": "启用侧边栏菜单"
         }
       }
     },
@@ -36,7 +37,8 @@
           "url": "目标地址或 HA 内部路径",
           "icon": "MDI 图标",
           "mode": "打开模式",
-          "require_admin": "仅管理员可见"
+          "require_admin": "仅管理员可见",
+          "enabled": "启用侧边栏菜单"
         }
       }
     },
