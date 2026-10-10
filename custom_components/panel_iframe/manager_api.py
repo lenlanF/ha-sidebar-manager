@@ -36,6 +36,7 @@ def _item(entry) -> dict[str, Any]:
         "require_admin": bool(values.get("require_admin", False)),
         "menu_order": values.get("menu_order", 100000),
         "configured": bool(values.get("url")),
+        "enabled": bool(values.get("enabled", True)),
     }
 
 
@@ -66,6 +67,7 @@ def ws_list(hass, connection, msg) -> None:
         vol.Required("icon"): str,
         vol.Required("mode"): vol.In(("0", "1", "2", "3")),
         vol.Required("require_admin"): bool,
+        vol.Optional("enabled"): bool,
     }
 )
 @websocket_api.async_response
@@ -73,6 +75,8 @@ async def ws_save(hass, connection, msg) -> None:
     """Create via the native config flow or update an existing config entry."""
     payload = {key: msg[key] for key in
                ("title", "url", "icon", "mode", "require_admin")}
+    if "enabled" in msg:
+        payload["enabled"] = msg["enabled"]
     values, errors = _validate(payload)
     if errors:
         connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT,
