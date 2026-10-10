@@ -5,6 +5,7 @@ lets HA itself instantiate the custom sidebar manager from get_panels. The
 auth token is injected in a disposable browser context only, never saved.
 """
 import json
+import re
 
 import pytest
 from homeassistant import setup
@@ -96,8 +97,12 @@ async def test_full_ha_frontend_shell_opens_sidebar_manager(
             await hass.async_block_till_done()
             assert frontend.async_panel_exists(hass, entries[0].entry_id)
             await page.goto(origin + "/" + entries[0].entry_id)
+            # HA 2026.10 canonicalizes /config/integrations to its
+            # /config/integrations/dashboard route. Both are successful,
+            # but unrelated navigation paths must still fail the test.
             await expect(page).to_have_url(
-                origin + "/config/integrations", timeout=15000
+                re.compile(r"/config/integrations(?:/dashboard)?$"),
+                timeout=15000,
             )
             width_actual = await page.evaluate(
                 "document.documentElement.scrollWidth"
