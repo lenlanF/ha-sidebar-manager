@@ -75,7 +75,6 @@ def prepare_restore(
     normalized = []
     plan = []
     seen_backup_ids = set()
-    seen_backup_titles = set()
     targeted_ids = set()
     for index, raw in enumerate(items):
         if not isinstance(raw, dict):
@@ -111,21 +110,20 @@ def prepare_restore(
             raise BackupValidationError(f"item_{index}_invalid_title_spaces")
         values["menu_order"] = order
         title_key = values["title"].casefold()
-        if title_key in seen_backup_titles:
-            raise BackupValidationError(f"item_{index}_duplicate_title")
-        seen_backup_titles.add(title_key)
         normalized.append(values)
 
         old = current_by_id.get(eid)
         if old is None:
             title_matches = current_by_title.get(title_key, [])
-            exact = [x for x in title_matches if x.get("url") == values["url"]]
+            exact = [x for x in title_matches if x.get("url") == values["url"]
+                     and x["entry_id"] not in targeted_ids]
             if exact:
                 old = exact[0]
                 action = "skip"
-            elif title_matches:
+            elif any(x.get("url") != values["url"] for x in title_matches):
                 raise BackupValidationError(f"item_{index}_title_conflict")
             else:
+                # Distinct legacy entries can share the same name and URL.
                 action = "create"
         else:
             action = "update"
