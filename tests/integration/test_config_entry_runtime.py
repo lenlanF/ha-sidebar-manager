@@ -497,3 +497,51 @@ async def test_restore_creates_missing_entry_and_reimport_skips_duplicate(hass, 
     assert preview["success"] and preview["result"]["counts"] == {
         "create": 0, "update": 0, "skip": 1,
     }, preview
+
+
+@pytest.mark.asyncio
+async def test_backup_preserves_distinct_legacy_entries_sharing_same_title(hass, hass_ws_client):
+    """A shared display title must not cause legacy entries to be lost."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    entries = [
+        MockConfigEntry(
+            domain=DOMAIN, title="同名菜单", entry_id="duplicate-name-a",
+            data={"url": "/config/logs", "mode": "3"},
+        ),
+        MockConfigEntry(
+            domain=DOMAIN, title="同名菜单", entry_id="duplicate-name-b",
+            data={"url": "/config/integrations", "mode": "3"},
+        ),
+    ]
+    for entry in entries:
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/backup"})
+    snapshot = (await ws.receive_json())["result"]
+    assert len(snapshot["items"]) == 2
+
+    hass.config_entries.async_update_entry(
+        entries[1], options={"url": "/config/automation/dashboard"}
+    )
+    await hass.async_block_till_done()
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot,
+    })
+    preview = await ws.receive_json()
+    assert preview["success"], preview
+    assert preview["result"]["counts"] == {"create": 0, "update": 1, "skip": 1}
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot, "apply": True,
+    })
+    restored = await ws.receive_json()
+    assert restored["success"] and restored["result"]["applied"], restored
+    await hass.async_block_till_done()
+    assert {x.entry_id: {**x.data, **x.options}["url"] for x in entries} == {
+        "duplicate-name-a": "/config/logs",
+        "duplicate-name-b": "/config/integrations",
+    }
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 2
