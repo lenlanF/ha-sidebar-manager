@@ -1,8 +1,17 @@
 # HA Sidebar Manager / Home Assistant 侧边栏管理器
 
-> **Development preview only / 开发预览：尚未发布 HACS 正式安装版本。** 请勿直接替换生产 HA 中的旧插件。
+> **HACS 测试预览版（0.1.0-dev.12）已经开放自定义仓库安装，非稳定发布。** 建议先在 HAOS 备份副本或独立测试实例上使用；旧版 `panel_iframe` 用户务必先阅读迁移与恢复警告。
 
 在 [shaonianzhentan/panel_iframe](https://github.com/shaonianzhentan/panel_iframe)（MIT）基础上升级的 Home Assistant 可视化侧边栏管理集成。
+
+## HACS 预览版安装（2026-10-11）
+
+**自定义仓库地址**：`https://github.com/lenlanF/ha-sidebar-manager`  
+**类别**：`Integration` · **版本**：`0.1.0-dev.12` · **要求 HA**：`2026.10.0+`  
+
+在 **HACS → ⋮ → 自定义存储库** 添加以上地址，选择集成类型，然后在 HACS 内搜索 **HA Sidebar Manager (Preview)** 并下载。HACS 使用 `main`（默认分支）下载本测试代码。重启 Home Assistant 后，到 **设置 → 设备与服务 → 添加集成** 中搜索 **HA Sidebar Manager**，选择安装侧边栏管理器；随后在左侧打开「侧边栏管理」。
+
+**特别提醒：** 如原本已经通过 HACS 安装 `shaonianzhentan/panel_iframe`，不要同时让两个仓库管理 `custom_components/panel_iframe`。务必先创建 HAOS 完整备份，再阅读 [HACS 测试预览版安装、原版切换与回退](docs/HACS_PREVIEW.md)；不要从「设备与服务」删除原有菜单 ConfigEntry。当前没有正式 GitHub Release，HACS 无 Release 时按其官方规则使用默认分支，并可能显示提交短哈希而非清单版本号。
 
 ## 当前开发功能（dev/compat-foundation）
 
@@ -24,7 +33,7 @@
 - 目标网页如果禁止 iframe 嵌入，需改成新窗口模式；HTTPS 页面无法普遍嵌入 HTTP 站点。
 - 旧 HTTP 代理入口因缺少安全边界而停用。
 
-## 开发环境下的安装流程（待实际验证）
+## 手动部署方式（仅作为 HACS 无法下载时的备用测试方案）
 
 1. **先备份** `/config` 文件夹和 `.storage/core.config_entries`，不要手动编辑 `.storage`。
 2. 准备一套**独立测试用** Home Assistant 环境，不要在正式 HA 上直接覆盖旧插件。
@@ -33,7 +42,7 @@
 5. 在左侧打开「侧边栏管理」，验证新增、编辑、删除、路径打开以及重启后配置保留。
 6. 有现有旧配置时，先备份，再在测试环境验证旧菜单迁移和操作一致性。
 
-安装方法仍是开发说明，**不是经过测试的正式安装指南**。正式发布前必须验证安全升级路径，避免与旧 HACS 仓库相互覆盖。
+上述手动部署流程**未在真实 HAOS 上独立验收**；请优先使用上方 HACS 预览安装入口，但这也不是正式稳定版的生产升级承诺。
 
 ## 开发与测试
 

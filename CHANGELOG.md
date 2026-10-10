@@ -155,3 +155,10 @@
 - Preserve legacy data/options, add real HA WebSocket migration regressions and simulated-browser form checks.
 - Earlier v0.1.0-dev.11 validation covered real HA frontend + Chromium, CSP/XFO and internal navigation. Full HAOS/HACS installed-upgrade acceptance remains outstanding; no release.
 
+## HACS test preview — 0.1.0-dev.12 (2026-10-11)
+
+- Make the already-tested 0.1.0-dev.12 integration available through HACS custom repositories by publishing it on the GitHub default branch `main`.
+- Clearly label HACS metadata and README as **Preview**, and document first-time installation, legacy `panel_iframe` domain conflict, full-backup requirements and source migration/rollback boundaries.
+- **No stable GitHub Release** is claimed; HACS falls back to the default branch in the absence of releases.
+- All seven source CI jobs and HACS 9/9 passed on preceding development commit `8b139d2`; validate this documentation/preview change and the final `main` deployment separately.
+

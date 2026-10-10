@@ -242,3 +242,12 @@
 - Initial CI evidence before this documentation/version bump: [HACS validator](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38073770180) 9/9 success; [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38073770150) syntax/isolated tests and simulated-browser job succeeded, with other HA jobs running at documentation time. Do not mark full HA CI as passed without inspecting the completed run.
 - Release gates unchanged: actual HACS-installed upstream-to-fork repository migration, full HAOS/Supervisor restart and backup restore, add-on Ingress tests, and physical mobile acceptance. No main merge or release.
 
+## 2026-10-11 — HACS 0.1.0-dev.12 test preview publication
+
+- User explicitly requested direct installation from HACS. Verified HACS official documentation that integration releases are optional and HACS installs the default branch when no releases exist: https://www.hacs.dev/docs/publish/integration/.
+- Inspected `main` (only initial project docs) versus `dev/compat-foundation` (full source, v0.1.0-dev.12): 172 commits ahead, 0 behind; the development source is a clean fast-forward from `main`.
+- Checked development CI at commit `8b139d213fd94dcb4de777b21ec4d64e03f69e11`: seven source checks passed in run 38073915898, HACS validation passed in run 38073915985.
+- Prepared `docs/HACS_PREVIEW.md`, prominent README installation entry and `hacs.json` Preview label. The `panel_iframe` domain remains unchanged for compatibility and still conflicts with simultaneously installed upstream source; no parallel integration registration.
+- Publishing plan: run final branch CI and HACS validation, then fast-forward `main` to the exact tested preview commit, and verify `main` contains `custom_components/panel_iframe/manifest.json` and preview HACS metadata. No GitHub stable Release or production HAOS modification.
+- Release gates deliberately not claimed as passed: real original-HACS-to-fork repo source migration, complete HAOS backup/restore + restart, Supervisor ingress / physical mobile.
+
