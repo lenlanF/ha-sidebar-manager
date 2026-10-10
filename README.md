@@ -96,3 +96,10 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 使用 HA 原生存储测试验证配置可序列化保存，包括菜单 ID、名称、旧字段和新设置。这**不等于**已完成 HA 整机重启、生产迁移或完整回滚验证。
 - 自动化结果：[HA Core 19/19、Chromium 桌面/手机](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374)；[HACS 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396)。
 - 仍为未发布开发分支；旧插件实际 HACS 原地升级请先按升级与回滚文档在独立 HA 中验证。
+
+## 开发版 v0.1.0-dev.6：跨进程配置恢复验证
+
+- 新增独立 CI 任务：两个**独立 Python 进程**分别执行 HA Core 原生配置保存，以及从磁盘 JSON 快照创建新配置管理器并加载原有菜单。
+- 已验证旧菜单 ID、名称、URL、未知历史字段、未配置菜单、启用/停用状态在这种冷加载测试中保持正确。
+- 最新证据：[跨进程及 HA Core 测试](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697)（保存进程和读取进程各 1 项通过；19 项常规 HA Core 功能测试通过），[HACS 官方 9/9 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745)。
+- **重要边界**：测试使用独立 Python 进程和 HA Core Store 加载器，但未启动两次完整 HA 服务，也未在 HACS 中原地替换已安装的原插件。正式安装与整机备份回退仍须在隔离 HA 实例中验证。

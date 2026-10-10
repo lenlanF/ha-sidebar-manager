@@ -53,3 +53,11 @@ Legacy HTTP proxy behavior is intentionally **disabled** and will not be restore
 - Historical title-only entries with no URL can be exported/imported through an explicitly guarded restore path; they are visible in manager lists as not configured but do not register clickable sidebar panels.
 - Verified HA native `core.config_entries` serialized data with old extra fields and modified options intact after delayed save. This is a storage-layer regression, not a full HA process cold-start.
 - HA 2026.10 Core integration **19/19 passed**, Chromium desktop/mobile and source checks succeeded on https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374; HACS validation 9/9 on https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396.
+
+## v0.1.0-dev.6 — native storage across Python process boundaries
+
+`tests/integration/test_restart_persistence.py` plus the `cross-process-config-reload` CI job write representative old-style ConfigEntries using Home Assistant Core and then load the serialized native storage envelope into a fresh HA Core ConfigEntries manager in **a different Python process**.
+
+This verifies entry IDs, titles, legacy options, manager-only entry, blank-URL entries and enabled/disabled behavior with frontend registration. Verified by CI run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697 (both process stages passed; functional HA 19 passed), with HACS 9/9 in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745.
+
+This deliberately does not claim complete HA service shutdown/startup in distinct processes, an actual HACS repository swap, or whole-server restore. These remain pre-release blockers.

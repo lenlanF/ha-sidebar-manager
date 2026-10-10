@@ -66,3 +66,7 @@ Before any future production upgrade, repeat all checks with the intended HA ver
 Original `panel_iframe` versions could create a menu record with only its title. A restored title-only entry retains an empty target URL, appears as **not configured** in the manager, and has no clickable HA sidebar panel until an administrator supplies a URL. The blank URL exception is for legacy restore only, not ordinary menu creation.
 
 When editing an old entry through the native Home Assistant options screen, unknown legacy options are preserved instead of silently discarded. The deprecated `proxy_access` feature remains deactivated for security. ConfigEntry persistence has been exercised through the HA native storage fixture, but production upgrade and an independent HA process restart still require verification on a separate installation.
+
+## Persistence verification status (v0.1.0-dev.6)
+
+The development CI now performs two independent Python-process passes over a native HA Core ConfigEntry storage envelope; legacy IDs and options survive a cold load. This improves confidence in storage compatibility, but **is not an in-place HACS upgrade test or a full Home Assistant restart**. Follow the complete backup and disposable-instance migration procedure above before any production installation.

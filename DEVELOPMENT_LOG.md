@@ -158,3 +158,15 @@
 - Evidence: `Source checks` https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139374 — HA 2026.10 Core **19/19 passed**, source/isolated checks and Chromium desktop/mobile browser jobs passed, and HA API smoke passed.
 - Evidence: HACS official validator https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396 — **9/9 passed**.
 - Still pending: real upstream HACS in-place repository replacement with full config backup/rollback, full HA process restart in a separate environment, and Chromium UI connected to the real HA frontend/Ingress. No production deployment, main merge or official Release.
+
+## 2026-10-10 — Cross-process ConfigEntry cold-load regression (v0.1.0-dev.6)
+
+- Re-read previous project log, current version, CI and HA 2026.10 ConfigEntries storage/load implementation before changes.
+- Added `tests/integration/test_restart_persistence.py` in two explicitly separate pytest/Python process phases. Phase A sets up representative legacy entries, modifies their native options, waits for HA store saving, and serializes the HA storage envelope to a disposable JSON file in the CI runner.
+- Phase B is a different Python process. It reads the artifact, initializes a fresh HA `ConfigEntries` manager through HA's native Store loader, verifies stable entry IDs, original `data`/unknown `options` fields, manager-only entry, title-only placeholder, and enabled/disabled setting. It also validates that the manager panel loads while disabled/unconfigured menu panels do not appear.
+- Added a dedicated `cross-process-config-reload` GitHub Actions job with distinct Process A and Process B commands, on HA 2026.10 and Python 3.14.
+- First run **failed because the test called async_setup twice** after HA automatically loaded entries when frontend was set up; this was a test harness error, not lost data. Fixed by checking `ConfigEntryState` and invoking setup only for entries still NOT_LOADED.
+- Passing final result on source commit `a574f6652`: [GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697) — **cross-process write 1 passed / read 1 passed** (the nonselected phase intentionally skipped in each subprocess), HA Core functional **19 passed / 2 phase-skipped**, Chromium UI, isolated/source and HA API smoke jobs passed.
+- Official HACS validator: **9/9 passed** on the same source commit, [run](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745).
+- **Boundary:** this is an isolated two-Python-process HA Core store cold-load test with a serialized on-disk artifact. It does **not** launch the full HA service in separate OS processes, does not replace an actually installed upstream HACS repository, and does not verify a HA Supervisor backup/restore. Keep original-upstream HACS source swap, full service reboot and production rollback on the release blocker list.
+- No code merge into main, no HACS release, no production change.

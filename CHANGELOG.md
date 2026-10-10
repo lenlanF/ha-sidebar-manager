@@ -103,3 +103,11 @@
 - Add safe round-trip backup restoration for original title-only sidebar entries without a configured URL.
 - Add HA native storage serialization regression for preserving old data/options and updated menu settings.
 - Verification: **19/19** HA 2026.10 Core tests, Chromium desktop/mobile, source/API checks and HACS **9/9** passed. No production upgrade or true process restart claimed.
+
+## Unreleased — 0.1.0-dev.6 (2026-10-10)
+
+- Add separate-process HA Core native ConfigEntry storage write/cold-load checks, preserving legacy entry IDs, unknown options and manager/menu states.
+- Fix test harness double setup after automatic frontend loading; no integration defect established by that first test failure.
+- CI includes dedicated cross-process storage check, all existing HA Core functional and Chromium UI checks; full source run 38054007697 succeeded.
+- Official HACS validation 9/9 succeeded on source commit a574f6652.
+- Full independent HA service restart and HACS upstream repo replacement remain untested; not released.
