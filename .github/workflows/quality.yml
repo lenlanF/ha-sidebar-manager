@@ -92,3 +92,26 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run desktop and mobile frontend interactions
         run: npx playwright test tests/browser/manager.spec.js --reporter=line
+
+  cross-process-config-reload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Install Home Assistant test runtime
+        run: python -m pip install "pytest-homeassistant-custom-component" "homeassistant>=2026.10,<2026.11" "home-assistant-frontend==20260930.2"
+      - name: Process A - persist actual native HA ConfigEntry store
+        env:
+          HA_RESTART_PHASE: write
+          HA_RESTART_FILE: ${{ runner.temp }}/ha-restart-core-config-entries.json
+          PYTEST_ADDOPTS: "--asyncio-mode=auto"
+        run: python -m pytest -q tests/integration/test_restart_persistence.py --disable-warnings
+      - name: Process B - cold load saved storage into fresh HA Core manager
+        env:
+          HA_RESTART_PHASE: read
+          HA_RESTART_FILE: ${{ runner.temp }}/ha-restart-core-config-entries.json
+          PYTEST_ADDOPTS: "--asyncio-mode=auto"
+        run: python -m pytest -q tests/integration/test_restart_persistence.py --disable-warnings
