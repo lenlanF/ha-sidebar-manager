@@ -17,7 +17,7 @@
 
 ## 已知限制
 
-- **已在独立 HA 2026.10 Core 测试实例中完成 5 项集成测试（包括真实 WebSocket CRUD 和只读用户拒绝访问），但尚未进行真实浏览器与生产设备验收。**
+- **已在独立 HA 2026.10 Core 测试实例中完成 7 项集成测试，包括真实 WebSocket CRUD 和非管理员权限；并通过模拟 HA 连接的 Chromium 桌面/手机 UI 测试。尚未在实际运行的 HA 浏览器和生产设备上验收。**
 - 当前上下排序只控制管理列表，HA 左侧菜单排序可能被用户自身的设置覆盖。
 - 尚无菜单分组、拖拽排序、按指定用户显示、备份导入导出和自动识别所有集成。
 - 旧的 MDI 图标预览静态资源未完整迁移，但新的管理界面不再依赖这些资源。
@@ -49,9 +49,9 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 
 ## 验证记录（2026-10-10）
 
-- HA Core 配置与 WebSocket 功能测试：**5/5 通过** — [GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040925266)。
-- HACS 官方结构校验：**8/9 通过**，品牌图标已符合要求，唯一剩余项是仓库 Topics — [HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040715657)。
-- 仓库所有者可在 GitHub About 中设置 Topics：`home-assistant`、`homeassistant`、`hacs`、`sidebar`、`smart-home`。
+- HA Core 配置与 WebSocket 功能测试：**7/7 通过** — [GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041795993)。
+- HACS 官方仓库结构校验：**9/9 全部通过**，包括 Topics 与品牌资源 — [HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489760)。
+- 已验证仓库设置 Topics：`home-assistant`、`homeassistant`、`hacs`、`sidebar`、`smart-home`。
 - 上述测试不是 HA 前端浏览器、Android/iOS 或原插件生产升级的验收证据；正式 HACS 版本仍未发布。
 
 ## 开发版进展：v0.1.0-dev.2
@@ -60,4 +60,9 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 修复最后一条菜单卸载后的共享管理器残留，以及再次加载时重复注册 WebSocket 命令的风险。
 - 自动化 HA 2026.10 Core 功能测试已扩展到 **7/7 通过**；另外新增了 DOM 模拟交互检查。
 - 验证：[GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728)。
-- 仍需真实浏览器、移动端、Ingress 和从原插件安装升级的测试；尚不属于可交付的 HACS 发布版。
+- 已通过模拟 HA WebSocket 的 Chromium 桌面/手机 UI 测试。仍需真实 HA 中的浏览器、Ingress 和从原插件安装升级测试；尚不属于可交付的 HACS 发布版。
+
+## 浏览器界面验证
+
+- 使用 Chromium 在 **1366×768（桌面）** 与 **375×812（手机）** 下进行菜单增删改、启停、布局边界检查，**2/2 通过**。[运行记录](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041795993)
+- 浏览器测试的后端 WebSocket 为模拟实现；HA Core 功能测试则使用独立 HA 2026.10 实例。两种测试互补，但尚未覆盖完整 HA 前端与真实服务器之间的交互。

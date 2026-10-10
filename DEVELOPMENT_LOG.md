@@ -109,3 +109,13 @@
 - HACS structural check remains 8/9 until repository Topics are added. The connected GitHub tool has repository file write access but does not expose a Topics update method.
 - Not verified: production upgrade and rollback; native HACS install lifecycle; desktop/mobile browser rendering and iframe/Ingress compatibility.
 - Version advanced to `0.1.0-dev.2` for the **unreleased development branch** only. Main and releases remain unchanged.
+
+## 2026-10-10 — HACS 9/9 and Chromium responsive UI checks
+
+- GitHub repository Topics are now configured (`hacs`, `home-assistant`, `homeassistant`, `sidebar`, `smart-home`); verified using GitHub API readback. **Topics were not written through the GitHub connector, which does not expose a topics-update action.**
+- Official HACS validation passed **9/9**: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489760
+- Added Playwright Chromium browser UI checks at desktop 1366×768 and mobile 375×812. Both cover add/edit/delete, enable/disable, and horizontal overflow of forms/buttons/cards with a mocked HA WebSocket backend.
+- First browser test failure was an ambiguous test locator matching both the status toast and menu badge; fixed the locator to target the badge. No application code change was needed for this failure.
+- Latest completed complete source run: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041795993 — Chromium **2/2**, HA Core functional **7/7**, isolated/source checks and API import all passed.
+- Not yet done: browser tests connected to an actual Home Assistant frontend/backend, end-to-end HACS install, old HACS integration upgrade migration/rollback, Ingress/CSP checks and per-user visibility beyond the native administrator restriction.
+- No main-branch merge or release performed.

@@ -16,3 +16,5 @@ Isolated tests are deliberately not labeled as full integration tests.
 - Added a seventh real Core functional test for enabled/disabled sidebar registration and manager lifecycle after final entry unload.
 - Added jsdom-based manager UI create/edit/delete/toggle/error-handling checks. This is a simulated DOM test, not HA browser acceptance.
 - Evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728 (7 functional tests passed).
+
+- Headless Chromium UI checks (simulated HA backend): `npm install --no-save @playwright/test@1.55.1 && npx playwright install chromium && npx playwright test tests/browser/manager.spec.js --reporter=line`. Run 38041795993, desktop/mobile 2/2 passed.

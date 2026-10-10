@@ -72,3 +72,10 @@
 - Add visual DOM regressions (create/edit/delete, error recovery, escaping, toggle).
 - Expand functional HA Core tests to 7 passing tests. GitHub Actions run 38041489728.
 - HACS Topics and actual production/browser acceptance remain unresolved; no release created.
+
+## Unreleased — HACS and Chromium validation (2026-10-10)
+
+- HACS repository validation now passes 9/9 following Topics configuration.
+- Added Playwright desktop and mobile Chromium interaction tests; 2/2 passed using a mocked HA WebSocket backend.
+- Source checks and Home Assistant Core functional suite (7/7) pass; run 38041795993.
+- Production upgrade and true HA frontend browser acceptance remain release blockers.

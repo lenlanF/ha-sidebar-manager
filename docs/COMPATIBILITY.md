@@ -1,10 +1,11 @@
 # Compatibility status (unreleased)
 
-The development branch retains the upstream domain `panel_iframe` and ConfigEntry storage. It includes an administrator management panel and backend WebSocket handlers, and has passed five real HA 2026.10 Core config-entry/WebSocket tests, but **not** browser acceptance tests.
+The development branch retains the upstream domain `panel_iframe` and ConfigEntry storage. It includes an administrator management panel and backend WebSocket handlers, and has passed seven real HA 2026.10 Core config-entry/WebSocket tests plus desktop/mobile Chromium tests with a simulated backend. Full live-HA browser acceptance remains outstanding.
 
 ## Checks implemented
-- Functional suite against Home Assistant Core 2026.10 (5 passed): bootstrap, legacy multi-entry reload, native new-entry config flow, authenticated WebSocket CRUD, non-admin access denial. Run 38040925266.
-- HACS validator 8/9 passed; repository Topics remains owner-setting blocker. Run 38040715657.
+- Chromium browser UI tests with simulated HA WebSocket backend: 1366px desktop and 375px mobile; both passed in run 38041795993. This is not a live-HA browser integration test.
+- Functional suite against Home Assistant Core 2026.10 (7 passed): bootstrap, legacy multi-entry reload, native new-entry config flow, authenticated WebSocket CRUD, non-admin access denial. Run 38041795993.
+- HACS validator 9/9 passed after the repository Topics were populated. Run 38041489760.
 - Python compilation, JSON parsing, JavaScript syntax.
 - Isolated validator and WebSocket CRUD regressions (with HA fakes).
 - Python import and command decorator smoke against installable Home Assistant Core in GitHub Actions. This is **not** full HA runtime verification.
