@@ -15,7 +15,8 @@
           "url": "Target path or URL",
           "icon": "MDI icon",
           "mode": "Open mode",
-          "require_admin": "Administrator only"
+          "require_admin": "Administrator only",
+          "enabled": "Enable sidebar item"
         }
       }
     },
@@ -36,7 +37,8 @@
           "url": "Target path or URL",
           "icon": "MDI icon",
           "mode": "Open mode",
-          "require_admin": "Administrator only"
+          "require_admin": "Administrator only",
+          "enabled": "Enable sidebar item"
         }
       }
     },
