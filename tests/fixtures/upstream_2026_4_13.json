@@ -1,0 +1,57 @@
+{
+  "upstream": "shaonianzhentan/panel_iframe",
+  "upstream_version": "2026.4.13",
+  "note": "Sanitized representative ConfigEntry layout inferred from upstream config_flow.py: data stores title, options store sidebar properties. Does not contain any user's HA records.",
+  "entries": [
+    {
+      "entry_id": "old-internal",
+      "title": "旧自动化",
+      "data": {
+        "title": "旧自动化"
+      },
+      "options": {
+        "icon": "mdi:robot",
+        "url": "/config/automation/dashboard",
+        "mode": "3",
+        "require_admin": true,
+        "proxy_access": false
+      }
+    },
+    {
+      "entry_id": "old-external",
+      "title": "旧设备",
+      "data": {
+        "title": "旧设备"
+      },
+      "options": {
+        "icon": "mdi:devices",
+        "url": "https://example.org/status",
+        "mode": "0",
+        "require_admin": false,
+        "proxy_access": true
+      }
+    },
+    {
+      "entry_id": "old-popup",
+      "title": "旧应用",
+      "data": {
+        "title": "旧应用"
+      },
+      "options": {
+        "icon": "mdi:open-in-new",
+        "url": "https://example.org",
+        "mode": "2",
+        "require_admin": false,
+        "proxy_access": false
+      }
+    },
+    {
+      "entry_id": "old-unconfigured",
+      "title": "未设置地址",
+      "data": {
+        "title": "未设置地址"
+      },
+      "options": {}
+    }
+  ]
+}
