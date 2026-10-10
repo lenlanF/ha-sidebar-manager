@@ -251,3 +251,11 @@
 - Publishing plan: run final branch CI and HACS validation, then fast-forward `main` to the exact tested preview commit, and verify `main` contains `custom_components/panel_iframe/manifest.json` and preview HACS metadata. No GitHub stable Release or production HAOS modification.
 - Release gates deliberately not claimed as passed: real original-HACS-to-fork repo source migration, complete HAOS backup/restore + restart, Supervisor ingress / physical mobile.
 
+## 2026-10-11 — v0.1.0 首个正式版
+
+- 用户确认 HAOS 初步使用未发现明显问题，要求将目前版本作为正式版；并未要求新增功能。
+- 验证基础：main 提交 `5dda7cec9706a4979c4f7c6f6855a36e67ddb9bf` 的全部七项 Source checks 已通过（run 38074892449），HACS 官方验证通过（run 38074892472）。
+- 仅把 manifest `0.1.0-dev.12` 定版为 `0.1.0`、去掉 HACS Preview 标签，修正要求开发版本号的迁移测试断言，并更新版本文档。保持 `panel_iframe` domain、用户配置格式和核心代码不变。
+- 新增 GitHub Actions gated publisher：同一最新 main SHA 的 Source checks 与 HACS validation 均成功才签发 `v0.1.0` 标签和稳定 GitHub Release；已有标签禁止移动，已有 Release 禁止覆盖。
+- 保留已知边界：未完整验证原作者 HACS 来源实机切换、HAOS Supervisor 整机备份还原和真实 Ingress。后续修复经开发分支和测试后发布新版本。
+

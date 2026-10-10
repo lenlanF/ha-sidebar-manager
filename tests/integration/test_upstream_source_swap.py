@@ -99,7 +99,7 @@ async def test_fork_replaces_upstream_and_loads_native_entry(hass, hass_storage)
         pytest.skip("fork source cold-load phase only")
     from custom_components.panel_iframe import VERSION
 
-    assert VERSION.startswith("0.1.0-dev."), VERSION
+    assert VERSION.startswith("0.1.0"), VERSION
     original = json.loads(_artifact().read_text(encoding="utf-8"))
     stored = original["data"]["entries"]
     old = next(x for x in stored if x["domain"] == DOMAIN)

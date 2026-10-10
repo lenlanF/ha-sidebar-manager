@@ -1,0 +1,67 @@
+name: Publish stable release
+on:
+  workflow_run:
+    workflows: ["Source checks", "HACS repository validation"]
+    types: [completed]
+    branches: [main]
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: sidebar-manager-stable-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish tagged release only after both checks pass on current main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const sha = context.payload.workflow_run.head_sha;
+            const {data: branch} = await github.rest.repos.getBranch({owner, repo, branch:"main"});
+            if (branch.commit.sha !== sha) { core.info("Stale SHA; skip"); return; }
+            const {data: runs} = await github.rest.actions.listWorkflowRunsForRepo({owner, repo, per_page:100});
+            const names = new Set(runs.workflow_runs.filter(r =>
+              r.head_sha === sha && r.head_branch === "main" &&
+              r.event === "push" && r.conclusion === "success"
+            ).map(r => r.name));
+            if (!["Source checks","HACS repository validation"].every(n => names.has(n))) {
+              core.info("Required checks not both successful for " + sha); return;
+            }
+            const getJson = async path => {
+              const {data} = await github.rest.repos.getContent({owner, repo, path, ref:sha});
+              if (Array.isArray(data) || !data.content) throw new Error("Invalid source "+path);
+              return JSON.parse(Buffer.from(data.content,"base64").toString("utf8"));
+            };
+            const manifest = await getJson("custom_components/panel_iframe/manifest.json");
+            const hacs = await getJson("hacs.json");
+            if (manifest.domain !== "panel_iframe" || hacs.name !== "HA Sidebar Manager")
+              throw new Error("Unexpected integration identity");
+            if (!/^\d+\.\d+\.\d+$/.test(manifest.version)) {
+              core.info("Not a stable version; skip"); return;
+            }
+            const tag = "v"+manifest.version;
+            try {
+              await github.rest.repos.getReleaseByTag({owner, repo, tag});
+              core.info("Release already exists: "+tag); return;
+            } catch(e) { if (e.status !== 404) throw e; }
+            try {
+              const {data} = await github.rest.git.getRef({owner, repo, ref:"tags/"+tag});
+              if (data.object.sha !== sha) throw new Error("Existing tag has another SHA");
+            } catch(e) {
+              if (e.status !== 404) throw e;
+              await github.rest.git.createRef({owner, repo, ref:"refs/tags/"+tag, sha});
+            }
+            await github.rest.repos.createRelease({
+              owner, repo, tag_name:tag, target_commitish:sha,
+              name:"HA Sidebar Manager "+tag,
+              body:"First stable HACS release; retains panel_iframe ConfigEntries. Before switching from the original HACS repository, make a full HAOS backup and read docs/HACS_INSTALL.md.",
+              prerelease:false, draft:false, generate_release_notes:true
+            });
+            core.info("Created stable GitHub Release "+tag+" at "+sha);

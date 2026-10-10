@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.0 — 首个正式版 (2026-10-11)
+
+- 将已通过 CI 的 `0.1.0-dev.12` 作为首个正式版本 `v0.1.0`，不改变核心功能或原生 ConfigEntry 存储。
+- 保持原插件的 `panel_iframe` 集成域，支持旧菜单、管理员可视化 CRUD、四种打开模式、启停、备份预览与恢复、安全外部打开链接。
+- HACS 中取消 Preview 标记，增加正式安装指南及稳定版 GitHub Release 自动发布流程（仅在本次 main 分支源码与 HACS 检查均通过后）。
+- 原作者 HACS 仓库来源切换、Supervisor Ingress 和整机恢复仍需专项验收，升级前应完整备份。
+
+
 ## Unreleased — project foundation (2026-10-10)
 
 - Established the HA Sidebar Manager project identity and roadmap.

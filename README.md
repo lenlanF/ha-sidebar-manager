@@ -1,19 +1,19 @@
 # HA Sidebar Manager / Home Assistant 侧边栏管理器
 
-> **HACS 测试预览版（0.1.0-dev.12）已经开放自定义仓库安装，非稳定发布。** 建议先在 HAOS 备份副本或独立测试实例上使用；旧版 `panel_iframe` 用户务必先阅读迁移与恢复警告。
+> **正式版 v0.1.0（2026-10-11）**：在此前通过 HA Core、Chromium 与 HACS 校验的 dev.12 代码基础上定版。用户初步 HAOS 使用未发现明显问题；旧版 HACS 来源切换、Supervisor 全量恢复及 Ingress 仍需专项验收。
 
 在 [shaonianzhentan/panel_iframe](https://github.com/shaonianzhentan/panel_iframe)（MIT）基础上升级的 Home Assistant 可视化侧边栏管理集成。
 
-## HACS 预览版安装（2026-10-11）
+## HACS 正式版安装（v0.1.0）
 
 **自定义仓库地址**：`https://github.com/lenlanF/ha-sidebar-manager`  
-**类别**：`Integration` · **版本**：`0.1.0-dev.12` · **要求 HA**：`2026.10.0+`  
+**类别**：`Integration` · **正式版**：`v0.1.0` · **要求 HA**：`2026.10.0+`  
 
-在 **HACS → ⋮ → 自定义存储库** 添加以上地址，选择集成类型，然后在 HACS 内搜索 **HA Sidebar Manager (Preview)** 并下载。HACS 使用 `main`（默认分支）下载本测试代码。重启 Home Assistant 后，到 **设置 → 设备与服务 → 添加集成** 中搜索 **HA Sidebar Manager**，选择安装侧边栏管理器；随后在左侧打开「侧边栏管理」。
+在 **HACS → ⋮ → 自定义存储库** 添加以上地址，选择 Integration，然后在 HACS 内搜索 **HA Sidebar Manager** 并下载正式版。通过 GitHub `v0.1.0` 标签和 Release 分发（Release 发布前 HACS 可从默认 `main` 安装）。重启 Home Assistant 后，在 **设置 → 设备与服务 → 添加集成** 搜索 **HA Sidebar Manager** 并选择安装侧边栏管理器；随后在左侧打开「侧边栏管理」。
 
-**特别提醒：** 如原本已经通过 HACS 安装 `shaonianzhentan/panel_iframe`，不要同时让两个仓库管理 `custom_components/panel_iframe`。务必先创建 HAOS 完整备份，再阅读 [HACS 测试预览版安装、原版切换与回退](docs/HACS_PREVIEW.md)；不要从「设备与服务」删除原有菜单 ConfigEntry。当前没有正式 GitHub Release，HACS 无 Release 时按其官方规则使用默认分支，并可能显示提交短哈希而非清单版本号。
+**特别提醒：** 如原本已经通过 HACS 安装 `shaonianzhentan/panel_iframe`，不要同时让两个仓库管理 `custom_components/panel_iframe`。务必先创建 HAOS 完整备份，再阅读 [正式版安装、原版切换与回退指南](docs/HACS_INSTALL.md)；不要从「设备与服务」删除原有菜单 ConfigEntry。
 
-## 当前开发功能（dev/compat-foundation）
+## v0.1.0 已有功能
 
 - 管理员专属侧边栏面板：`/ha-sidebar-manager`。
 - 可视化创建、编辑和删除菜单；管理旧版 `panel_iframe` 的配置记录。
@@ -42,15 +42,17 @@
 5. 在左侧打开「侧边栏管理」，验证新增、编辑、删除、路径打开以及重启后配置保留。
 6. 有现有旧配置时，先备份，再在测试环境验证旧菜单迁移和操作一致性。
 
-上述手动部署流程**未在真实 HAOS 上独立验收**；请优先使用上方 HACS 预览安装入口，但这也不是正式稳定版的生产升级承诺。
+上述手动部署流程主要用于故障排查，正常情况下优先使用 HACS。针对原版 `panel_iframe` 的来源迁移，请先阅读完整备份与回退说明。
 
 ## 开发与测试
 
 - `python -m pytest -q tests/test_validation_isolated.py tests/test_manager_isolated.py`
 - GitHub Actions：Python 语法、JSON、JavaScript、隔离 CRUD 测试和 Home Assistant Core API 导入烟雾测试。
-- 剩余发布门槛：完整 HA 前端应用壳层和移动端实机、HACS 旧仓库来源迁移、Supervisor 整机备份回滚及 Ingress/CSP。
+- 后续兼容验收：旧 HACS 仓库来源迁移、Supervisor 整机备份回滚、真实附加组件 Ingress 和实体手机 App；完整 HA 前端壳层及 Chromium iframe 安全头行为已有自动化测试。
 
-详见 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)、[CHANGELOG.md](CHANGELOG.md) 与 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
+详见 [正式版安装说明](docs/HACS_INSTALL.md)、[DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)、[CHANGELOG.md](CHANGELOG.md) 与 [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)。
+
+> 下方 `dev.*` 章节为开发阶段的历史记录，不代表当前版本仍是预览版。
 
 ## License
 
