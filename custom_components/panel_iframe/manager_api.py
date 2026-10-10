@@ -231,6 +231,10 @@ async def ws_restore(hass, connection, msg) -> None:
                         await hass.config_entries.async_reload(entry.entry_id)
                     completed.append({"action": action, "entry_id": entry.entry_id})
                 else:
+                    if not values.get("url"):
+                        # Preserve an old config entry that never had a URL.
+                        # Normal UI creation still requires a valid URL.
+                        values["restore_unconfigured"] = True
                     result = await hass.config_entries.flow.async_init(
                         DOMAIN, context={"source": SOURCE_USER}, data=values
                     )
