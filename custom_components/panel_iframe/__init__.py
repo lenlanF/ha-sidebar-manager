@@ -38,7 +38,7 @@ async def _register_static_once(hass: HomeAssistant) -> None:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _register_static_once(hass)
-    config = entry.options
+    config = {**entry.data, **entry.options}
     url = config.get("url")
     if url:
         # Historical proxy_access option is preserved but deliberately not used.
@@ -62,6 +62,7 @@ async def _update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    frontend.async_remove_panel(hass, entry.entry_id)
+    if {**entry.data, **entry.options}.get('url'):
+        frontend.async_remove_panel(hass, entry.entry_id)
     entry.async_unload_callbacks()
     return True
