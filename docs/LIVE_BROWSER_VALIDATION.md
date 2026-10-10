@@ -58,3 +58,11 @@ The first run correctly redirected to `/onboarding.html` because the isolated HA
 **Verified results:** [Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091) completed all 7 jobs; **6/6 real HA Chromium** tests passed (4 minimal-host cases plus 2 full SPA cases); 19 regular Core tests plus upgrade/rollback and isolated regressions passed. [HACS](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086) 9/9.
 
 **Limitations:** the full SPA test is a real Chromium browser with a disposable HA Core instance and test token. It does not represent physical mobile app testing, installed HACS repository migration, HAOS/Supervisor backup and full restart, or add-on Ingress/CSP validation.
+
+## v0.1.0-dev.11 — real browser iframe restrictions and native navigation
+
+The iframe test covers modes 0 and 1 with an allowed HA HTTP response and with XFO/CSP-denied responses injected into disposable Playwright-controlled iframe requests. This is needed because the HA HTTP middleware can replace target security headers during test fixture serving; no production security configuration is altered. Chromium itself enforces the restrictive headers. Fallback links are visible and use noopener/noreferrer.
+
+The real full HA SPA test also opens a mode-3 internal menu and confirms it navigates to the HA integrations screen, including the framework's canonical /config/integrations/dashboard path.
+
+Validated: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572 (12/12 live browser, 19 Core tests, seven source CI jobs) and https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573 (HACS 9/9). Real Supervisor Ingress is not covered.
