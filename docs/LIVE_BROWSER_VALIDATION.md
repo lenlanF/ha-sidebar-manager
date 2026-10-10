@@ -48,3 +48,13 @@ The registered `/ha-sidebar-manager` and menu URL paths are checked against Home
 - [HACS validator](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639): **9/9 passed**.
 
 Remaining: complete logged-in HA navigation shell, HACS repo switching and real deployment rollback, physical mobile and Ingress/CSP.
+
+## v0.1.0-dev.10 — full authenticated Home Assistant SPA shell
+
+New `tests/live_browser/test_full_frontend_shell.py` starts Chromium against the *real* Home Assistant frontend route `/ha-sidebar-manager` (not a minimal test HTML host) at 1366×768 and 375×812. A transient **test-only** `hassTokens` record authenticates the browser. The frontend itself instantiates the custom panel and provides the actual Home Assistant WebSocket connection. The browser exercises form-based creation, verifies a real ConfigEntry, and checks horizontal overflow.
+
+The first run correctly redirected to `/onboarding.html` because the isolated HA test instance was not yet onboarded. The fixture now marks only the disposable instance's HA onboarding steps done, after which the full shell test passed. No browser-storage credential artifacts are persisted or checked in.
+
+**Verified results:** [Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091) completed all 7 jobs; **6/6 real HA Chromium** tests passed (4 minimal-host cases plus 2 full SPA cases); 19 regular Core tests plus upgrade/rollback and isolated regressions passed. [HACS](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086) 9/9.
+
+**Limitations:** the full SPA test is a real Chromium browser with a disposable HA Core instance and test token. It does not represent physical mobile app testing, installed HACS repository migration, HAOS/Supervisor backup and full restart, or add-on Ingress/CSP validation.

@@ -81,3 +81,9 @@ Evidence: 2/2 real browser WS scenarios + all previously implemented suites pass
 Real Chromium tests against HA Core 2026.10 now cover the native frontend `get_panels` WebSocket command using administrator and read-only credentials, admin-only and unrestricted panel visibility, the module URLs registered in HA's frontend panel metadata, safe new-window links, and the real SPA index responder at manager/menu paths. Panel unload is verified against subsequent `get_panels` responses.
 
 CI evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602 (4/4 browser tests, 19 HA Core functional tests, all jobs passing) and https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639 (HACS 9/9). This still **does not** exercise full authenticated HA SPA shell rendering or an actual HACS installation-source change.
+
+## v0.1.0-dev.10 — complete HA SPA boot
+
+Two live Chromium checks now run the installed HA frontend itself at `/ha-sidebar-manager`, with ephemeral test authentication and finalized onboarding state. Both desktop and mobile viewports rendered `ha-sidebar-manager-panel` via the HA frontend panel registry, obtained real `hass.connection`, and created a native ConfigEntry. Together with the four real HA HTTP/WS minimal-host tests, all **6/6 passed** in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091. HACS official repository checks **9/9** passed in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086.
+
+Still unverified: HACS repository source switching, true HAOS/Supervisor reboot, whole-system backup restore, physical phones, ingress/CSP and remote iframe policies.

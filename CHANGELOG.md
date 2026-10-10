@@ -132,3 +132,10 @@
 - Validate correct frontend visibility, registered custom-panel names and modules, actual HA SPA index routing, menu link safety and prompt removal from panel metadata on unload.
 - Verified 4/4 browser tests using real HA HTTP and WebSocket; 19 HA Core functional tests and all other CI checks passed (source run 38061488602); HACS 9/9 passed (run 38061488639).
 - Still not a full signed-in HA frontend shell or actual HACS migration acceptance; no official release.
+
+## Unreleased — 0.1.0-dev.10 (2026-10-11)
+
+- Add two Chromium tests that boot the actual authenticated Home Assistant SPA at the manager route, exercising real UI composition and native WebSocket menu creation at desktop and mobile viewport widths.
+- Fix isolated HA fixture onboarding initialization to prevent redirecting the browser to the first-run welcome screen.
+- Verified **6/6 actual HA HTTP/WebSocket Chromium tests**, 19 HA Core functional tests, all 7 source CI jobs, and HACS repository validation 9/9.
+- Remaining release gates: HACS-installed source migration, HAOS/Supervisor restart + backup restore, physical mobile and Ingress/CSP; no release.

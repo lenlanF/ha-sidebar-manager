@@ -128,3 +128,13 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 已验证 HA 的 `/ha-sidebar-manager` 和菜单地址返回前端 HTML，删除/卸载后前端菜单列表正确更新。
 - [真实浏览器与 HA 联动 4/4，通过](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488602)；[HACS 官方 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38061488639)。
 - 尚未测试完整登录后的 HA 前端 SPA 壳层、实际 HACS 安装仓库切换、Ingress/CSP 和完整 HAOS 备份回滚；开发分支暂不发布正式版。
+
+## 开发版 v0.1.0-dev.10：完整 HA 前端实测
+
+已新增真实 Home Assistant **SPA 前端壳层**测试：Chromium 直接打开 HA 提供的 `/ha-sidebar-manager` 页面，使用隔离测试账号进入完整前端，确认自动装载菜单管理器、连接 HA WebSocket，并可新增菜单且将记录写入 ConfigEntry。测试覆盖桌面 **1366×768** 和手机尺寸 **375×812**。
+
+在早期测试中，隔离 HA 未完成首次安装引导，浏览器进入了欢迎页。现已在测试实例中完成 Onboarding 初始化，最终通过。请注意，这不是在你的 HAOS 实机上操作，也不验证实体手机应用。
+
+[完整 HA 浏览器及功能测试：6/6 + 19/19](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306091) · [HACS：9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38068306086)
+
+下一步仍需要验证实际 HACS 安装仓库切换、Supervisor 整机备份恢复、Ingress/CSP 和实体设备。开发分支保持未发布。
