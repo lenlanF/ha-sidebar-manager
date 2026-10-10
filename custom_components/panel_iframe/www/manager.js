@@ -124,13 +124,15 @@
       if (!this._showForm) return "";
       const item = this._draft || this._editing || {};
       const selected = String(item.mode ?? "3");
+      // Legacy upstream title-only entries may be edited without assigning a URL.
+      const needsUrl = !item.entry_id || Boolean(item.url);
       return '<form id="editor"><h3>' + (item.entry_id ? "编辑菜单" : "新增菜单") + '</h3>'
         + '<div class="fields"><div><label for="title">显示名称</label>'
         + '<input id="title" name="title" maxlength="100" required placeholder="例如：自动化管理" value="' + escapeHTML(item.title || "") + '"></div>'
         + '<div><label for="icon">MDI 图标</label><input id="icon" name="icon" required placeholder="mdi:robot" value="'
         + escapeHTML(item.icon || "mdi:link-box-outline") + '"></div>'
-        + '<div class="fullfield"><label for="url">目标路径或 URL</label><input id="url" name="url" required placeholder="/config/automation/dashboard 或 https://..." value="'
-        + escapeHTML(item.url || "") + '"><p class="muted">HA 内部页面填写 / 开头的相对路径；外部站点需允许浏览器嵌入。</p></div>'
+        + '<div class="fullfield"><label for="url">目标路径或 URL</label><input id="url" name="url"' + (needsUrl ? ' required' : '') + ' placeholder="/config/automation/dashboard 或 https://..." value="'
+        + escapeHTML(item.url || "") + '"><p class="muted">HA 内部页面填写 / 开头的相对路径；外部站点需允许浏览器嵌入。仅历史未配置的菜单允许继续留空。</p></div>'
         + '<div><label for="mode">打开模式</label><select id="mode" name="mode">'
         + MODES.map(([value,label]) => '<option value="' + value + '"' + (value === selected ? " selected" : "") + '>' + label + '</option>').join("")
         + '</select></div>'
