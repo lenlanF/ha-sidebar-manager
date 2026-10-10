@@ -7,6 +7,8 @@ database is introduced and no Home Assistant core files are modified.
 
 from __future__ import annotations
 
+import asyncio
+from datetime import datetime, timezone
 from typing import Any
 
 import voluptuous as vol
@@ -15,6 +17,7 @@ from homeassistant.components import websocket_api
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant, callback
 
+from .backup import BackupValidationError, make_backup, prepare_restore
 from .config_flow import DOMAIN, _validate
 
 WS_PREFIX = "panel_iframe/manager/"
@@ -43,7 +46,7 @@ def _item(entry) -> dict[str, Any]:
 @callback
 def async_register_commands(hass: HomeAssistant) -> None:
     """Register once per HA process, even with multiple config entries."""
-    for handler in (ws_list, ws_save, ws_delete, ws_reorder):
+    for handler in (ws_list, ws_save, ws_delete, ws_reorder, ws_backup, ws_restore):
         websocket_api.async_register_command(hass, handler)
 
 
@@ -162,3 +165,93 @@ async def ws_reorder(hass, connection, msg) -> None:
             entry, options={**entry.options, "menu_order": index}
         )
     connection.send_result(msg["id"], {"saved": True})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): WS_PREFIX + "backup"})
+@callback
+def ws_backup(hass, connection, msg) -> None:
+    """Read-only JSON snapshot; browser downloads this locally."""
+    try:
+        rows = [_item(entry) for entry in _entries(hass)]
+        backup = make_backup(rows, datetime.now(timezone.utc).isoformat())
+    except BackupValidationError as err:
+        connection.send_error(msg["id"], "backup_failed", str(err))
+        return
+    connection.send_result(msg["id"], backup)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): WS_PREFIX + "restore",
+    vol.Required("backup"): dict,
+    vol.Optional("apply", default=False): bool,
+})
+@websocket_api.async_response
+async def ws_restore(hass, connection, msg) -> None:
+    """Dry-run preflight by default; explicit apply never deletes a menu.
+
+    Apply can partially succeed if HA fails during a create/update.
+    Report each completed operation rather than claiming atomic rollback.
+    """
+    lock = hass.data.setdefault(f"{DOMAIN}_restore_lock", asyncio.Lock())
+    async with lock:
+        try:
+            existing = [_item(entry) for entry in _entries(hass)]
+            normalized, plan = prepare_restore(msg["backup"], existing, _validate)
+        except BackupValidationError as err:
+            connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, str(err))
+            return
+
+        counts = {
+            action: sum(item["action"] == action for item in plan)
+            for action in ("create", "update", "skip")
+        }
+        if not msg.get("apply", False):
+            connection.send_result(msg["id"], {"plan": plan, "counts": counts, "applied": False})
+            return
+
+        completed = []
+        for item in plan:
+            index = item["index"]
+            action = item["action"]
+            if action == "skip":
+                continue
+            values = dict(normalized[index])
+            try:
+                if action == "update":
+                    entry = hass.config_entries.async_get_entry(item["entry_id"])
+                    if entry is None or entry.domain != DOMAIN or entry.data.get("manager_only"):
+                        raise ValueError("Entry no longer exists")
+                    title = values.pop("title")
+                    options = {**entry.options, **values}
+                    old_title, old_options = entry.title, entry.options
+                    hass.config_entries.async_update_entry(entry, title=title, options=options)
+                    if old_options == options and old_title != title:
+                        await hass.config_entries.async_reload(entry.entry_id)
+                    completed.append({"action": action, "entry_id": entry.entry_id})
+                else:
+                    result = await hass.config_entries.flow.async_init(
+                        DOMAIN, context={"source": SOURCE_USER}, data=values
+                    )
+                    if result.get("type") != "create_entry":
+                        raise RuntimeError("Home Assistant did not create the menu")
+                    new_entry = result.get("result")
+                    completed.append({
+                        "action": action,
+                        "entry_id": new_entry.entry_id if new_entry else None,
+                    })
+            except Exception as err:
+                connection.send_result(msg["id"], {
+                    "applied": False,
+                    "partial": bool(completed),
+                    "completed": completed,
+                    "failed_index": index,
+                    "error": str(err),
+                    "counts": counts,
+                })
+                return
+        connection.send_result(msg["id"], {
+            "applied": True, "partial": False, "completed": completed,
+            "counts": counts,
+        })
