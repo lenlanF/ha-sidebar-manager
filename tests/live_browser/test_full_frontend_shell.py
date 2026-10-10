@@ -89,6 +89,19 @@ async def test_full_ha_frontend_shell_opens_sidebar_manager(
                 if not row.data.get("manager_only")
             ]
             assert len(entries) == 1 and entries[0].title == "完整前端菜单"
+            # Open the actual HA sidebar menu route. Mode 3 must dispatch
+            # Home Assistant internal navigation without an iframe or a new
+            # browser tab. This catches broken location-changed integration.
+            await hass.async_block_till_done()
+            assert entries[0].entry_id in [
+                panel.frontend_url_path for panel in
+                __import__("homeassistant.components.frontend", fromlist=["async_get_panels"])
+                    .async_get_panels(hass).values()
+            ]
+            await page.goto(origin + "/" + entries[0].entry_id)
+            await expect(page).to_have_url(
+                origin + "/config/integrations", timeout=15000
+            )
             width_actual = await page.evaluate(
                 "document.documentElement.scrollWidth"
             )
