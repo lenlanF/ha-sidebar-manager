@@ -101,7 +101,7 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             # origin; set_content provides only the minimal custom-element host.
             await page.goto(module_url)
             await page.set_content(
-                '<html lang="zh"><head><meta name="viewport" '
+                '<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" '
                 'content="width=device-width,initial-scale=1"></head>'
                 '<body style="margin:0;height:100vh"></body></html>'
             )
