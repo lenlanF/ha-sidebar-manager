@@ -4,6 +4,8 @@ Unlike test_browser_real_ha.py this navigates the *actual* frontend shell and
 lets HA itself instantiate the custom sidebar manager from get_panels. The
 auth token is injected in a disposable browser context only, never saved.
 """
+import json
+
 import pytest
 from homeassistant import setup
 from playwright.async_api import async_playwright, expect
@@ -33,22 +35,25 @@ async def test_full_ha_frontend_shell_opens_sidebar_manager(
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
         context = await browser.new_context(viewport={"width": width, "height": height})
-        await context.add_init_script(
-            """({origin,accessToken}) => {
-              if (location.origin !== origin) return;
-              // HA frontend uses hassTokens. This is an ephemeral test token;
-              // no credentials are written to repo, artifacts or logs.
-              localStorage.setItem("hassTokens", JSON.stringify({
-                hassUrl: origin,
-                clientId: origin + "/",
-                expires: Date.now() + 25 * 60 * 1000,
-                refresh_token: "",
-                access_token: accessToken,
-                expires_in: 1800
-              }));
-            }""",
-            {"origin": origin, "accessToken": hass_access_token},
+        # Python Playwright's add_init_script accepts a script, not args.
+        # Serialize only in memory; do not log token-bearing browser state.
+        credentials = json.dumps(
+            {"origin": origin, "accessToken": hass_access_token}
         )
+        await context.add_init_script(script="""
+          (() => {
+            const {origin, accessToken} = """ + credentials + """;
+            if (location.origin !== origin) return;
+            localStorage.setItem("hassTokens", JSON.stringify({
+              hassUrl: origin,
+              clientId: origin + "/",
+              expires: Date.now() + 25 * 60 * 1000,
+              refresh_token: "",
+              access_token: accessToken,
+              expires_in: 1800
+            }));
+          })();
+        """)
         page = await context.new_page()
         try:
             response = await page.goto(url, wait_until="domcontentloaded")
