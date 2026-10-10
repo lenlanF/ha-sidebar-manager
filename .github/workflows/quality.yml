@@ -4,7 +4,7 @@ on:
     branches: [main, dev/compat-foundation]
   pull_request:
 concurrency:
-  group: source-checks-${{ github.ref }}
+  group: source-checks-v2-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -39,7 +39,7 @@ jobs:
       - name: Install targeted test dependencies
         run: pip install pytest voluptuous
       - name: Run config validation tests with HA stubs
-        run: python -m pytest -q tests/test_validation_isolated.py tests/test_manager_isolated.py
+        run: python -m pytest -q tests/test_validation_isolated.py tests/test_manager_isolated.py tests/test_backup_validation_isolated.py
 
   homeassistant-api-smoke:
     runs-on: ubuntu-latest
