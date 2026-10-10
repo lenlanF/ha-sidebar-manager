@@ -2,11 +2,17 @@
   "config": {
     "step": {
       "user": {
-        "title": "添加侧边栏菜单",
-        "description": "创建新的菜单入口，历史 panel_iframe 配置仍然保留。",
+        "title": "设置侧边栏管理器",
+        "description": "首次安装建议选择「安装侧边栏管理器」。之后通过 HA 左侧菜单集中管理所有入口。",
+        "data": {
+          "setup_type": "操作类型"
+        }
+      },
+      "item": {
+        "title": "创建侧边栏入口",
         "data": {
           "title": "菜单名称",
-          "url": "目标地址或 HA 内部路径",
+          "url": "目标地址或内部路径",
           "icon": "MDI 图标",
           "mode": "打开模式",
           "require_admin": "仅管理员可见"
@@ -17,6 +23,9 @@
       "required": "此项不能为空",
       "invalid_internal_path": "请填写以 / 开头的 HA 内部路径",
       "invalid_url": "请填写有效的网址或内部路径"
+    },
+    "abort": {
+      "already_configured": "管理器已经安装，无需重复安装"
     }
   },
   "options": {
@@ -35,6 +44,9 @@
       "required": "此项不能为空",
       "invalid_internal_path": "请填写以 / 开头的 HA 内部路径",
       "invalid_url": "请填写有效的网址或内部路径"
+    },
+    "abort": {
+      "manage_in_sidebar": "请通过左侧「侧边栏管理」页面设置菜单"
     }
   }
 }
