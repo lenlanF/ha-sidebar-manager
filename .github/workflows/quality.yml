@@ -159,3 +159,20 @@ jobs:
           HA_UPGRADE_FILE: ${{ runner.temp }}/original-panel-iframe-store.json
           PYTEST_ADDOPTS: "--asyncio-mode=auto"
         run: timeout 120s python -m pytest -q tests/integration/test_upstream_source_swap.py --disable-warnings -x
+
+  live-ha-websocket-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Install HA Core runtime and Playwright
+        run: python -m pip install "pytest-homeassistant-custom-component" "homeassistant>=2026.10,<2026.11" "home-assistant-frontend==20260930.2" "playwright"
+      - name: Install headless Chromium and platform dependencies
+        run: python -m playwright install --with-deps chromium
+      - name: Exercise desktop and mobile against actual HA HTTP and WebSocket
+        env:
+          PYTEST_ADDOPTS: "--asyncio-mode=auto"
+        run: python -m pytest -q tests/live_browser -x --disable-warnings
