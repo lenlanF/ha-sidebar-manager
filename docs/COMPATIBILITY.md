@@ -29,3 +29,12 @@ The development branch retains the upstream domain `panel_iframe` and ConfigEntr
 7. Add UI-based per-user visibility only with backend-enforced access controls.
 
 See DEVELOPMENT_LOG.md for executed checks and run URLs.
+
+## v0.1.0-dev.3 migration-specific checks
+
+- Versioned menu JSON backup, dry-run import and explicit apply; all commands are HA-admin only.
+- Non-destructive preflight, conflict rejection, size and count restrictions, different-host menu creation and same-title legacy entry preservation.
+- Confirmed on HA 2026.10 Core: 12/12 functional tests passed (run 38043711432).
+- Chromium desktop/mobile UI (simulated HA backend): JSON export/download, import preview, confirmation and menu state recovery (2/2, same run).
+- HACS repository validator: 9/9 passed (run 38043711445).
+- Real HA frontend and upstream HACS in-place migration are **not** validated. A menu JSON is not an HA snapshot and importing it cannot reverse installed code upgrades.

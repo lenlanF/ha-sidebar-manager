@@ -55,9 +55,9 @@ jobs:
         run: |
           python - <<'PY'
           from custom_components.panel_iframe.config_flow import SidebarConfigFlow, SidebarOptionsFlow
-          from custom_components.panel_iframe.manager_api import ws_list, ws_save, ws_delete, ws_reorder
+          from custom_components.panel_iframe.manager_api import ws_list, ws_save, ws_delete, ws_reorder, ws_backup, ws_restore
           from custom_components.panel_iframe import async_setup_entry, async_unload_entry
-          for fn in (ws_list, ws_save, ws_delete, ws_reorder):
+          for fn in (ws_list, ws_save, ws_delete, ws_reorder, ws_backup, ws_restore):
               assert fn._ws_command.startswith("panel_iframe/manager/")
           assert SidebarConfigFlow.VERSION == 1
           print("Home Assistant API imports and WebSocket command registration: OK")

@@ -18,3 +18,7 @@ Isolated tests are deliberately not labeled as full integration tests.
 - Evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728 (7 functional tests passed).
 
 - Headless Chromium UI checks (simulated HA backend): `npm install --no-save @playwright/test@1.55.1 && npx playwright install chromium && npx playwright test tests/browser/manager.spec.js --reporter=line`. Run 38041795993, desktop/mobile 2/2 passed.
+
+- v0.1.0-dev.3: 12 actual HA 2026.10 Core functional tests including menu JSON export/preview/restore, non-admin denial, cross-instance import, conflict rejection and same-title entries. Run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711432.
+- Chromium UI test 2/2 passed with simulated HA WebSocket including download + preview + confirmation (same run). Real HA frontend is still outstanding.
+- Official HACS structure validation 9/9 passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445.

@@ -79,3 +79,12 @@
 - Added Playwright desktop and mobile Chromium interaction tests; 2/2 passed using a mocked HA WebSocket backend.
 - Source checks and Home Assistant Core functional suite (7/7) pass; run 38041795993.
 - Production upgrade and true HA frontend browser acceptance remain release blockers.
+
+## Unreleased — 0.1.0-dev.3 (2026-10-10)
+
+- Add visual menu JSON export and preview-before-apply import; backend uses admin-only WebSocket and native ConfigEntry APIs.
+- Add versioned backup format, validation/size limits, conflict checks, duplicate-safe imports and same-title legacy menu support.
+- Preserve unrelated old options when restoring the supported menu fields; no auto-delete, no claims of atomic or full HA rollback.
+- Add desktop/mobile Chromium export/restore scenarios and HA Core backup/migration/security tests.
+- Verification: **12/12 HA Core functional tests**, **2/2 Chromium browser tests** and **HACS 9/9** on commit `8f3c0aa7a`.
+- Full legacy HACS upgrade and real HA frontend testing remain release blockers.

@@ -66,3 +66,17 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 
 - 使用 Chromium 在 **1366×768（桌面）** 与 **375×812（手机）** 下进行菜单增删改、启停、布局边界检查，**2/2 通过**。[运行记录](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041795993)
 - 浏览器测试的后端 WebSocket 为模拟实现；HA Core 功能测试则使用独立 HA 2026.10 实例。两种测试互补，但尚未覆盖完整 HA 前端与真实服务器之间的交互。
+
+## 菜单备份、导入预览与恢复（v0.1.0-dev.3）
+
+开发分支的「侧边栏管理」页面新增 **导出备份 / 导入备份** 按钮。菜单快照在管理员浏览器下载为 JSON 文件；导入会先由后端完成全量校验并显示“新增、恢复已有、跳过”的预览，只有再次确认才修改数据。
+
+- 保留旧 `panel_iframe` 菜单的 ID、标题、URL、图标、打开模式、启停状态和管理列表顺序；仍通过 HA 原生 ConfigEntry 存储。
+- 恢复优先按已有菜单 ID 匹配；跨实例导入时根据菜单名称与路径识别已有项；同名但不同路径的独立旧菜单不会合并。
+- 导入**不会自动删除其他菜单**，重复导入可跳过相同项目；遇到冲突先报错，不静默覆盖。
+- 单次上限 100 个菜单、256 KB；仅 HA 管理员可操作。文件中的 URL 可能含私密内网地址或访问凭据，请妥善保存。
+- **菜单 JSON 不是 Home Assistant 完整备份，也不能保证事务性回滚**。恢复过程中若运行时失败，可能部分操作成功，界面会提示核对。真正的插件降级必须使用事先保存的 HA 完整备份。
+
+详细测试/升级/回退操作见 [docs/UPGRADE_AND_ROLLBACK.md](docs/UPGRADE_AND_ROLLBACK.md)。
+
+**最新验证**：HA 2026.10 Core 功能测试 **12/12 通过**，Chromium 桌面/手机交互、源码及 API 导入均通过 — [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711432)；HACS 官方校验 **9/9 通过** — [HACS](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445)。上述浏览器测试使用模拟 WebSocket，不能替代在真实 HA 前端中的手动验收，尚未发布正式版本。

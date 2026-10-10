@@ -119,3 +119,18 @@
 - Latest completed complete source run: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041795993 — Chromium **2/2**, HA Core functional **7/7**, isolated/source checks and API import all passed.
 - Not yet done: browser tests connected to an actual Home Assistant frontend/backend, end-to-end HACS install, old HACS integration upgrade migration/rollback, Ingress/CSP checks and per-user visibility beyond the native administrator restriction.
 - No main-branch merge or release performed.
+
+## 2026-10-10 — Menu snapshot, safe restore preview and legacy migration coverage (v0.1.0-dev.3)
+
+- Added `custom_components/panel_iframe/backup.py`: versioned, size-bounded menu snapshot and full-file preflight planner, retaining supported legacy item configuration without using HA private .storage internals.
+- Added administrator-only `panel_iframe/manager/backup` and `panel_iframe/manager/restore` WebSocket endpoints. Import defaults to dry-run; explicit apply is required. Existing entries match by ConfigEntry ID; new entries use HA's native config flow. There is no implicit delete of menus absent from the snapshot.
+- Added local JSON download, file upload, preview counts and explicit confirmation in the visual manager. URL details may be sensitive; browser downloads should be stored securely.
+- Preserved extra legacy data/options on existing entry updates, disabled old insecure proxy settings, and ensured backed-up unknown metadata is not misrepresented as restorable to a different HA instance.
+- Added safety limits: 100 menus, 256 KB JSON, validated title/path/icon/mode/order/booleans, duplicate target checks and conflicting-name protection.
+- Fixed an edge case for two distinct legacy menus having the same display title: preserve their separate ConfigEntry identities and URLs; do not collapse or reject them.
+- Added HA Core integration tests: export/preview/apply/skip; cross-instance missing-entry creation; malformed/conflicting snapshot rejection before any writes; non-admin access denial; old same-title entries recovery.
+- Extended Playwright Chromium desktop/mobile tests to download JSON, change existing menu settings, preview import without mutations, then confirm restoration. Added isolated Python backup planner tests for hostile formats and legacy duplicate names.
+- **Confirmed on commit `8f3c0aa7a`**: HA 2026.10 Core functional tests **12/12 passed**, Chromium manager tests **2/2 passed**, isolated tests and HA API import smoke passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711432.
+- **Confirmed HACS 9/9 passed** on same code: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38043711445.
+- Added `docs/UPGRADE_AND_ROLLBACK.md` with disposable-instance migration procedure and mandatory full HA backup. Menu-level restore is explicitly **non-atomic** and not a full HA software rollback.
+- Outstanding: actual upgrade of an already HACS-installed original `panel_iframe` in a disposable HA system, full live-HA frontend browsing, Ingress/CSP matrix, and production rollback rehearsals. **No main merge or release**.
