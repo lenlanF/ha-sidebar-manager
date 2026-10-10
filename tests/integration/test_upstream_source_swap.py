@@ -130,3 +130,42 @@ async def test_fork_replaces_upstream_and_loads_native_entry(hass, hass_storage)
     # The upstream ID, UI title and options survive the fork source switch.
     assert len(entries.async_entries(DOMAIN)) == 1
     assert found.entry_id == old_entry_id
+
+
+@pytest.mark.asyncio
+async def test_restore_original_source_and_preupgrade_menu_storage(hass, hass_storage):
+    """Rehearse restoring original plugin files plus its menu storage snapshot.
+
+    This is a deliberate *source+ConfigEntries snapshot* rollback rehearsal,
+    not a Home Assistant Supervisor full-backup restore.
+    """
+    if os.environ.get("HA_UPGRADE_PHASE") != "rollback":
+        pytest.skip("rollback source and stored menu phase only")
+
+    source = Path(os.environ["HA_TEST_PLUGIN_SOURCE"])
+    upstream = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
+    assert upstream["version"] == "2026.4.13"
+    original = json.loads(_artifact().read_text(encoding="utf-8"))
+    raw = [x for x in original["data"]["entries"] if x["domain"] == DOMAIN]
+    assert len(raw) == 1
+    entry_id = raw[0]["entry_id"]
+    hass_storage["core.config_entries"] = original
+    entries = ConfigEntries(hass, {})
+    await entries.async_initialize()
+    hass.config_entries = entries
+
+    entry = entries.async_get_entry(entry_id)
+    assert entry and entry.title == ENTRY_TITLE
+    assert entry.options["url"] == ENTRY_URL
+    assert entry.options["proxy_access"] is False
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    await hass.async_block_till_done()
+    if entry.state is ConfigEntryState.NOT_LOADED:
+        assert await entries.async_setup(entry_id)
+    await hass.async_block_till_done()
+    assert entry.state is ConfigEntryState.LOADED
+    assert frontend.async_panel_exists(hass, entry_id)
+    # The old release did not have a dedicated management panel.
+    assert not frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert len(entries.async_entries(DOMAIN)) == 1
