@@ -1,0 +1,32 @@
+name: Source checks
+on:
+  push:
+    branches: [main, dev/compat-foundation]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  syntax-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Python sources
+        run: python -m compileall -q custom_components tests
+      - name: Validate JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for p in Path("custom_components").rglob("*.json"):
+              json.loads(p.read_text(encoding="utf-8"))
+          json.loads(Path("hacs.json").read_text(encoding="utf-8"))
+          PY
+      - name: Check JavaScript syntax
+        run: node --check custom_components/panel_iframe/www/panel_iframe.js
+      - name: Install targeted test dependencies
+        run: pip install pytest voluptuous
+      - name: Run config validation tests with HA stubs
+        run: python -m pytest -q tests/test_validation_isolated.py
