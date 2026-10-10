@@ -9,11 +9,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .manifest import manifest
+from .manager_api import async_register_commands
 
 DOMAIN = manifest.domain
 VERSION = manifest.version
 STATIC_FLAG = f"{DOMAIN}_static_registered"
 STATIC_LOCK = f"{DOMAIN}_static_lock"
+MANAGER_FLAG = f"{DOMAIN}_manager_registered"
+MANAGER_LOCK = f"{DOMAIN}_manager_lock"
 
 
 async def _register_static_once(hass: HomeAssistant) -> None:
@@ -36,8 +39,30 @@ async def _register_static_once(hass: HomeAssistant) -> None:
         hass.data[STATIC_FLAG] = True
 
 
+async def _register_manager_once(hass: HomeAssistant) -> None:
+    lock = hass.data.get(MANAGER_LOCK)
+    if lock is None:
+        lock = hass.data[MANAGER_LOCK] = asyncio.Lock()
+    async with lock:
+        if hass.data.get(MANAGER_FLAG):
+            return
+        await async_register_panel(
+            hass,
+            frontend_url_path="ha-sidebar-manager",
+            webcomponent_name="ha-sidebar-manager-panel",
+            sidebar_title="侧边栏管理",
+            sidebar_icon="mdi:view-dashboard-edit",
+            module_url=f"/panel_iframe_www/manager.js?v={VERSION}",
+            config={},
+            require_admin=True,
+        )
+        async_register_commands(hass)
+        hass.data[MANAGER_FLAG] = True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _register_static_once(hass)
+    await _register_manager_once(hass)
     config = {**entry.data, **entry.options}
     url = config.get("url")
     if url:
