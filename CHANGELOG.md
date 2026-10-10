@@ -45,3 +45,12 @@
 - Security: backend admin authorization and preserved disabling of unsafe wildcard HTTP proxy.
 
 **Not released:** live HA browser tests, packaging validation, migration rehearsals, native per-user sidebar order, drag/drop and custom user permissions remain outstanding.
+
+
+## Unreleased — UI compatibility and safety (2026-10-10)
+
+- Replaced HA-internal Lit inheritance with standalone native custom elements for menu display.
+- Removed unused legacy wildcard HTTP proxy and redirect shell.
+- Added Node checks for internal navigation and URL/iframe mode behavior.
+- Fixed a regression allowing removal of the manager bootstrap entry from the management API.
+- Updated GitHub Actions and validated source + Core API import jobs successfully (run 38039794524).
