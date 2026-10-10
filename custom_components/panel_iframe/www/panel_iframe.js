@@ -115,6 +115,18 @@ customElements.whenDefined('ha-panel-lovelace').then(() => {
       event.stopPropagation()
     }
 
+    updated() {
+      if (!this.panel || String(this.panel.config?.mode) !== '3') return;
+      const target = this.panel.config.url;
+      if (!target || !target.startsWith('/') || target.startsWith('//')) return;
+      if (this._lastNavigationTarget === target) return;
+      this._lastNavigationTarget = target;
+      if (location.pathname + location.search + location.hash !== target) {
+        history.replaceState(null, '', target);
+        this.fireEvent('location-changed', { replace: true });
+      }
+    }
+
     render() {
       const { config, title } = this.panel
       let { url, mode } = config
@@ -130,10 +142,9 @@ customElements.whenDefined('ha-panel-lovelace').then(() => {
       if (url.indexOf(':') == 0) {
         url = location.protocol + '//' + location.hostname + url
       }
-      // 内置页面
+      // Navigate only after initial render; never mutate history inside render().
       if (mode == 3) {
-        history.replaceState(null, null, url)
-        return this.fireEvent('location-changed', { replace: true })
+        return html`<div class="toolbar"><ha-menu-button .hass=${this.hass} .narrow=${this.narrow}></ha-menu-button><div class="main-title">正在打开页面…</div></div>`;
       }
       // 如果HTTPS协议，则打开新页面
       if (location.protocol === 'https:' && url.indexOf('http://') == 0) {
