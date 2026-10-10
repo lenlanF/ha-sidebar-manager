@@ -1,18 +1,28 @@
-# Compatibility foundation (unreleased)
+# Compatibility status (unreleased)
 
-This branch is not a released HA integration. It imports the upstream text-based runtime, retains domain `panel_iframe`, and updates the options-flow access pattern to `self.config_entry`.
+The development branch retains the upstream domain `panel_iframe` and ConfigEntry storage. It includes an administrator management panel and backend WebSocket handlers, but has not passed live Home Assistant browser acceptance tests.
 
-## Known gaps
-- Upstream MDI font assets and preview page are not bundled yet (binary files cannot be imported by the current source-writing route).
-- No live Home Assistant installation or integration tests have been performed.
-- Legacy HTTP proxy is intentionally disabled: upstream registers an unrestricted router endpoint and requires a security redesign.
-- Internal route navigation is still implemented in the upstream JS render method, pending rewrite.
-- Entry creation and registration lifecycle still need full multi-entry regression testing.
-- Visual management screen is not implemented.
+## Checks implemented
+- Python compilation, JSON parsing, JavaScript syntax.
+- Isolated validator and WebSocket CRUD regressions (with HA fakes).
+- Python import and command decorator smoke against installable Home Assistant Core in GitHub Actions. This is **not** full HA runtime verification.
 
-## First checks before release
-1. Import remaining runtime resources, verify HACS packaging.
-2. Install in disposable supported Home Assistant, check logs.
-3. Add/configure/reload/delete several entries; ensure no duplicate static route errors.
-4. Verify old config entries and both mobile/desktop views.
-5. Validate browser navigation, permissions, HTTP(S) iframe behavior.
+## Core integration decisions
+- Upstream `panel_iframe` entries are displayed in the same management list as new menu entries.
+- A new manager bootstrap entry uses `{"manager_only": true}`; it does not create its own menu shortcut in the managed list.
+- Shared assets and admin manager panel are guarded by per-instance async locks.
+- All writes use HA config flows / `hass.config_entries.async_update_entry` / `async_remove`.
+- Legacy proxy access is not executed. Do not expose HTTP proxy routes without authentication and SSRF review.
+- Management list order is not claimed to force every user's native sidebar order.
+- The old MDI font preview assets are not present; the new manager UI uses HA's `ha-icon`.
+
+## Blockers before official release
+1. Test in a disposable Home Assistant 2026.10 installation and verify a clean log.
+2. Install as upgrade over original `panel_iframe` with multiple configured entries. Verify title, URL and mode.
+3. Confirm management panel and WebSocket CRUD in browser, including restart and reload persistence.
+4. Verify all four open modes on desktop and mobile (ingress and CSP/X-Frame-Options cases).
+5. Verify permission isolation for non-admin users and test the disabled legacy proxy is unreachable.
+6. Add visible rollback/backup workflow and finish HACS packaging checks.
+7. Add UI-based per-user visibility only with backend-enforced access controls.
+
+See DEVELOPMENT_LOG.md for executed checks and run URLs.
