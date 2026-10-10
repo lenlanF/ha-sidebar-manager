@@ -261,3 +261,33 @@ async def test_shared_manager_lifecycle_and_return_after_reload(hass):
     assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
     assert hass.data["panel_iframe_manager_commands_registered"]
     assert hass.data["panel_iframe_active_entry_ids"] == {bootstrap.entry_id}
+
+
+@pytest.mark.asyncio
+async def test_menu_enabled_toggle_controls_native_sidebar_panel(hass):
+    """Disable/enable an entry without deleting its config or the manager."""
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    menu = MockConfigEntry(
+        domain=DOMAIN,
+        title="设备入口",
+        data={"url": "/config/integrations", "mode": "3"},
+        entry_id="toggle-menu-test",
+    )
+    menu.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(menu.entry_id)
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, menu.entry_id)
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+
+    hass.config_entries.async_update_entry(menu, options={"enabled": False})
+    await hass.async_block_till_done()
+    assert not frontend.async_panel_exists(hass, menu.entry_id)
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    assert menu.options["enabled"] is False
+
+    hass.config_entries.async_update_entry(menu, options={"enabled": True})
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, menu.entry_id)
+    assert menu.options["enabled"] is True
