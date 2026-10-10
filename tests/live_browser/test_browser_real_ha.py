@@ -6,8 +6,11 @@ operation is sent to HA Core's actual authenticated /api/websocket server.
 This is not a full Home Assistant frontend shell, HACS install, or HAOS boot.
 """
 
+from pathlib import Path
+
 import pytest
 from homeassistant import setup
+from homeassistant.components.http import StaticPathConfig
 from playwright.async_api import async_playwright, expect
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -86,6 +89,16 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
     assert await hass.config_entries.async_setup(bootstrap.entry_id)
     await hass.async_block_till_done()
 
+    # Serve HTML from the SAME real HA HTTP origin as scripts and WS.
+    # Synthetic browser-fulfilled documents can be denied private-network
+    # access by Chromium's Local Network Access security checks.
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            "/__sidebar_test_host.html",
+            str(Path(__file__).with_name("host.html")),
+            False,
+        )
+    ])
     # TestClient's server owns the actual socket and routes requests to HA.
     client = await hass_client()
     module_url = str(client.make_url("/panel_iframe_www/manager.js"))
@@ -109,24 +122,7 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
         page.on("requestfailed", lambda req: print("BROWSER_REQUEST_FAILED", req.url, req.failure))
         page.on("websocket", lambda ws: print("BROWSER_WS_URL", ws.url))
         try:
-            # Serve only a minimal UTF-8 HTML HOST via Playwright. The JS
-            # resource and WebSocket still come from the real HA server.
-            # Navigating directly to application/javascript would force a
-            # non-UTF-8 document encoding before dynamic meta tags are parsed.
-            async def serve_host(route):
-                await route.fulfill(
-                    status=200,
-                    content_type="text/html; charset=utf-8",
-                    body=(
-                        '<!doctype html><html lang="zh"><head>'
-                        '<meta charset="utf-8">'
-                        '<meta name="viewport" content="width=device-width,initial-scale=1">'
-                        '</head><body style="margin:0;height:100vh"></body></html>'
-                    ),
-                )
-
-            await page.route("**/__sidebar_test_host", serve_host)
-            host_url = str(client.make_url("/__sidebar_test_host"))
+            host_url = str(client.make_url("/__sidebar_test_host.html"))
             await page.goto(host_url)
             await page.add_script_tag(url=module_url)
             assert await page.evaluate(CONNECT, {"token": hass_access_token})
