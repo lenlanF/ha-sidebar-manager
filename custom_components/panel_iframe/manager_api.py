@@ -121,7 +121,7 @@ async def ws_save(hass, connection, msg) -> None:
 async def ws_delete(hass, connection, msg) -> None:
     """Remove only this integration's config entries."""
     entry = hass.config_entries.async_get_entry(msg["entry_id"])
-    if entry is None or entry.domain != DOMAIN:
+    if entry is None or entry.domain != DOMAIN or entry.data.get('manager_only'):
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND,
                               "Sidebar entry not found")
         return
