@@ -118,9 +118,6 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             viewport={"width": width, "height": height}
         )
         page = await context.new_page()
-        page.on("console", lambda msg: print("BROWSER_CONSOLE", msg.type, msg.text))
-        page.on("requestfailed", lambda req: print("BROWSER_REQUEST_FAILED", req.url, req.failure))
-        page.on("websocket", lambda ws: print("BROWSER_WS_URL", ws.url))
         try:
             host_url = str(client.make_url("/__sidebar_test_host.html"))
             await page.goto(host_url)
@@ -144,6 +141,17 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             assert len(entries) == 1
             entry = entries[0]
             assert {**entry.data, **entry.options}["url"] == "/config/integrations"
+
+            # Edit uses the same authenticated HA WebSocket, not a fake store.
+            await manager.locator('button[data-action="edit"]').click()
+            form = manager.locator("form#editor")
+            await form.locator('input[name="title"]').fill("已修改的真实菜单")
+            await form.locator('input[name="url"]').fill("/config/logs")
+            await form.locator('button[type="submit"]').click()
+            await expect(manager.locator(".entry strong")).to_have_text("已修改的真实菜单")
+            await hass.async_block_till_done()
+            assert entry.title == "已修改的真实菜单"
+            assert {**entry.data, **entry.options}["url"] == "/config/logs"
 
             await manager.locator('button[data-action="toggle"]').click()
             await expect(manager.locator(".entry .badge")).to_contain_text("已停用")
