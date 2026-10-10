@@ -1,71 +1,92 @@
+"""Config and options flows for HA Sidebar Manager (legacy domain preserved)."""
+
 from __future__ import annotations
 
 from typing import Any
+
 import voluptuous as vol
-
-from homeassistant.data_entry_flow import FlowResult
-
-import homeassistant.helpers.config_validation as cv
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.core import callback
-from homeassistant.config_entries import ConfigFlow, OptionsFlow, ConfigEntry
 
-from .manifest import manifest
+DOMAIN = "panel_iframe"
+MODES = {"0": "嵌入", "1": "全屏", "2": "新窗口", "3": "HA 内部路径"}
 
-mode_list = {
-    '0': '默认',
-    '1': '全屏',
-    '2': '新页面',
-    '3': '内置页面'
-}
 
-class SimpleConfigFlow(ConfigFlow, domain=manifest.domain):
+def _fields(defaults: dict[str, Any], *, include_title: bool) -> vol.Schema:
+    fields = {}
+    if include_title:
+        fields[vol.Required("title", default=defaults.get("title", ""))] = str
+    fields[vol.Required("url", default=defaults.get("url", ""))] = str
+    fields[vol.Required("icon", default=defaults.get("icon", "mdi:link-box-outline"))] = str
+    fields[vol.Required("mode", default=str(defaults.get("mode", "0")))] = vol.In(MODES)
+    fields[vol.Required("require_admin", default=defaults.get("require_admin", False))] = bool
+    return vol.Schema(fields)
 
+
+def _validate(data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, str]]:
+    values = dict(data)
+    errors: dict[str, str] = {}
+    if "title" in values:
+        values["title"] = values["title"].strip()
+        if not values["title"]:
+            errors["title"] = "required"
+    values["url"] = values["url"].strip()
+    if not values["url"]:
+        errors["url"] = "required"
+    values["icon"] = values["icon"].strip().replace("mdi-", "mdi:", 1)
+    if not values["icon"]:
+        errors["icon"] = "required"
+    if values["mode"] == "3" and (
+        not values["url"].startswith("/")
+        or values["url"].startswith("//")
+        or "\\" in values["url"]
+    ):
+        errors["url"] = "invalid_internal_path"
+    if values["mode"] != "3" and not (
+        values["url"].startswith(("http://", "https://", "/"))
+        or values["url"].isdigit()
+        or values["url"].startswith(":")
+    ):
+        errors["url"] = "invalid_url"
+    values["proxy_access"] = False
+    return values, errors
+
+
+class SidebarConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-
-        if user_input is None:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        if user_input is not None:
+            values, errors = _validate(user_input)
+            if not errors:
+                title = values.pop("title")
+                return self.async_create_entry(title=title, data=values)
+        else:
             errors = {}
-            DATA_SCHEMA = vol.Schema({
-                vol.Required("title"): str,
-            })
-            return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
-
-        return self.async_create_entry(title=user_input['title'], data=user_input)
+        return self.async_show_form(
+            step_id="user",
+            data_schema=_fields(user_input or {}, include_title=True),
+            errors=errors,
+        )
 
     @staticmethod
     @callback
-    def async_get_options_flow(entry: ConfigEntry):
-        return OptionsFlowHandler()
+    def async_get_options_flow(config_entry: ConfigEntry):
+        return SidebarOptionsFlow()
 
 
-class OptionsFlowHandler(OptionsFlow):
-    async def async_step_init(self, user_input=None):
-        return await self.async_step_user(user_input)
-
-    async def async_step_user(self, user_input=None):
-        errors = {}
-        if user_input is None:
-            options = self.config_entry.options
+class SidebarOptionsFlow(OptionsFlow):
+    async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        if user_input is not None:
+            values, errors = _validate(user_input)
+            if not errors:
+                return self.async_create_entry(title="", data=values)
+        else:
             errors = {}
-            DATA_SCHEMA = vol.Schema({
-                vol.Required("icon", default=options.get('icon', 'mdi:link-box-outline')): str,
-                vol.Required("url", default=options.get('url', '')): str,
-                vol.Required("mode", default=options.get('mode', '0')): vol.In(mode_list),
-                vol.Required("require_admin", default=options.get('require_admin', False)): bool,
-                vol.Required("proxy_access", default=False): bool,
-            })
-            return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
-        # 选项更新
-        user_input['icon'] = user_input['icon'].strip().replace('mdi-', 'mdi:')
-        user_input['url'] = user_input['url'].strip()
-
-        # 内置页面禁止使用代理
-        if user_input['mode'] == '3':
-            user_input['proxy_access'] = False
-
-        # Legacy proxying is disabled until an authenticated, SSRF-safe replacement exists.
-        user_input['proxy_access'] = False
-        return self.async_create_entry(title='', data=user_input)
+        defaults = dict(self.config_entry.data)
+        defaults.update(self.config_entry.options)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=_fields(user_input or defaults, include_title=False),
+            errors=errors,
+        )
