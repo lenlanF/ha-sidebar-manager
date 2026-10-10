@@ -147,3 +147,11 @@
 - Test navigation from a real authenticated HA panel to its internal integrations page, including HA's canonical /config/integrations/dashboard route.
 - Source CI passed: 12/12 real HA/Chromium, 19 HA Core functional tests and all 7 jobs (run 38069857572); HACS validator 9/9 (run 38069857573).
 - HAOS/Supervisor Ingress and installed-HACS migration remain unverified; not released.
+
+## Unreleased — 0.1.0-dev.12 (2026-10-11)
+
+- Fix editing and enabling/disabling upstream title-only ConfigEntries without requiring a URL to be entered first.
+- Keep URL mandatory for newly created menus and block clearing URLs on previously configured menus.
+- Preserve legacy data/options, add real HA WebSocket migration regressions and simulated-browser form checks.
+- Earlier v0.1.0-dev.11 validation covered real HA frontend + Chromium, CSP/XFO and internal navigation. Full HAOS/HACS installed-upgrade acceptance remains outstanding; no release.
+

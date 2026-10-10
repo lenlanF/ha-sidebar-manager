@@ -17,7 +17,7 @@
 
 ## 已知限制
 
-- **已通过 HA 2026.10 Core 的 19 项常规测试、原版源码升级回退演练，以及 Chromium 桌面/手机经真实 HA HTTP 和已认证 WebSocket 的交互测试。测试仍未覆盖完整 HA 登录后前端壳层、HAOS 整机重启和 HACS 已安装旧插件的来源切换。**
+- **已通过 HA 2026.10 Core 的 19 项常规测试、原版源码升级回退演练，以及 Chromium 桌面/手机经真实 HA HTTP 和已认证 WebSocket 的交互测试。完整 HA 前端壳层已在隔离 HA Core + Chromium 中验证；仍未覆盖 HAOS 整机重启和 HACS 已安装旧插件的来源切换。**
 - 当前上下排序只控制管理列表，HA 左侧菜单排序可能被用户自身的设置覆盖。
 - 尚无菜单分组、拖拽排序、按指定用户显示和自动识别所有集成；管理员菜单 JSON 备份和预览恢复已实现。
 - 旧的 MDI 图标预览静态资源未完整迁移，但新的管理界面不再依赖这些资源。
@@ -146,3 +146,10 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 已在真实 HA HTTP + Chromium 环境中验证允许嵌入、XFO DENY 和 CSP frame-ancestors none 的行为，以及 HA 内部路由跳转（HA 会将 /config/integrations 规范化为 /config/integrations/dashboard）。**12/12 浏览器测试、19/19 常规 Core 测试通过**：[Source CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572)，[HACS 9/9](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573)。
 
 [Ingress、iframe 使用限制与 HAOS 验收清单](docs/INGRESS_AND_EMBEDDING.md)。请注意：没有 Supervisor 的 Core 测试不能等同于真实 Ingress 附加组件验收；当前仍不发布。
+
+## 开发版 v0.1.0-dev.12：旧版未配置 URL 菜单兼容
+
+修复了原版 `panel_iframe` 历史菜单仅有名称、尚未填写 URL 时无法在可视化管理器中修改或启停的问题。现在可在保留旧配置及原生 ConfigEntry 的同时进行管理。普通新建菜单仍必须填写 URL；已有正常 URL 的菜单不允许误清空地址。
+
+已补充真实 HA WebSocket 和浏览器 DOM 回归测试。详见 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)；旧 HACS 仓库原地升级、HAOS 整机重启及 Supervisor 完整备份恢复尚未完成验收，继续保持未发布。
+

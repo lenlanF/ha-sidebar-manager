@@ -231,3 +231,14 @@
 - CI evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857572 on source commit e6f4b3f47: 7/7 jobs passed, 12/12 real HA HTTP/Chromium scenarios, 19/19 regular HA Core functional tests, cross-process store, pinned upstream source upgrade/rollback, isolated and API tests.
 - HACS validator: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38069857573, 9/9 passed.
 - Not tested: actual Supervisor Ingress endpoints, installed HACS source switch, HAOS reboot/complete backup restore or physical mobile devices. No main branch merge or release.
+
+## 2026-10-11 — Legacy title-only entries editable in manager (v0.1.0-dev.12)
+
+- Resumed by checking current dev/compat-foundation HEAD (v0.1.0-dev.11), not the stale v0.1.0-dev.4 handoff summary. Did not repeat the already-passing real-HA Chromium/iframe tests or broaden the feature scope.
+- Found a functional migration flaw: upstream panel_iframe permits title-only ConfigEntries before URL configuration. Backup import/native OptionsFlow could preserve such entries, but the manager's WebSocket save always required a nonempty URL, so its edit/toggle buttons failed. The visual editor also unconditionally required a URL.
+- Fixed manager API validation: allow an empty URL **only when updating an existing currently-unconfigured non-manager entry**. Newly created entries and previously configured entries still require a valid URL, and manager bootstrap entries remain protected.
+- Updated the browser form to allow blank URL only for the same existing unconfigured legacy entry. Added tests using real HA authenticated WebSocket for edit/toggle, legacy metadata preservation and no phantom panel; reject new empty-URL entries and reject clearing a configured URL. Added jsdom browser form regressions.
+- Changes landed in four focused commits culminating in [0cf9323](https://github.com/lenlanF/ha-sidebar-manager/commit/0cf9323d8b494e7d5c970d95c1bf36d1edc9834b).
+- Initial CI evidence before this documentation/version bump: [HACS validator](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38073770180) 9/9 success; [Source checks](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38073770150) syntax/isolated tests and simulated-browser job succeeded, with other HA jobs running at documentation time. Do not mark full HA CI as passed without inspecting the completed run.
+- Release gates unchanged: actual HACS-installed upstream-to-fork repository migration, full HAOS/Supervisor restart and backup restore, add-on Ingress tests, and physical mobile acceptance. No main merge or release.
+
