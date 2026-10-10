@@ -68,7 +68,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Install Home Assistant Core testing fixtures
-        run: python -m pip install "pytest-homeassistant-custom-component" "homeassistant>=2026.10,<2026.11"
+        run: python -m pip install "pytest-homeassistant-custom-component" "homeassistant>=2026.10,<2026.11" "home-assistant-frontend==20260930.2"
       - name: Run actual Home Assistant configuration and lifecycle tests
         env:
           PYTEST_ADDOPTS: "--asyncio-mode=auto"
