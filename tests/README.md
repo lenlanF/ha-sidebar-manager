@@ -43,3 +43,4 @@ Isolated tests are deliberately not labeled as full integration tests.
 
 - v0.1.0-dev.12: `test_manager_can_edit_unconfigured_legacy_entry_without_url` verifies HA-authenticated management updates to original title-only entries, preservation of old metadata, no sidebar panel for URL-less records, blocking blank-URL creation and clearing of configured URLs. `tests/test_manager_ui.cjs` verifies that only editing a legacy placeholder makes the URL field optional. Full HAOS/HACS upgrade/reboot acceptance is still separate.
 
+- Stable v0.1.0: pinned-original source upgrade smoke accepts production version family (`0.1.0`) as well as earlier `0.1.0-dev.*`. No user ConfigEntry schema or core behavior change was made during release promotion.

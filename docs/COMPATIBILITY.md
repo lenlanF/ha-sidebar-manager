@@ -1,6 +1,6 @@
-# Compatibility status (unreleased)
+# Compatibility status — stable v0.1.0
 
-The development branch retains the upstream domain `panel_iframe` and ConfigEntry storage. It includes an administrator management panel and backend WebSocket handlers, and has passed seven real HA 2026.10 Core config-entry/WebSocket tests plus desktop/mobile Chromium tests with a simulated backend. Full live-HA browser acceptance remains outstanding.
+The stable release retains upstream `panel_iframe` domain and native ConfigEntry storage. Full authenticated Home Assistant SPA + Chromium, real HA Core WebSocket, earlier source upgrade/rollback and HACS repository validation have passed in automation. Prior development milestone counts below are kept for history. Actual upstream-HACS source switching, Supervisor Ingress and full HAOS backup restore remain field validation items.
 
 ## Checks implemented
 - Chromium browser UI tests with simulated HA WebSocket backend: 1366px desktop and 375px mobile; both passed in run 38041795993. This is not a live-HA browser integration test.
@@ -19,7 +19,7 @@ The development branch retains the upstream domain `panel_iframe` and ConfigEntr
 - Management list order is not claimed to force every user's native sidebar order.
 - The old MDI font preview assets are not present; the new manager UI uses HA's `ha-icon`.
 
-## Blockers before official release
+## Additional field acceptance following v0.1.0 release
 1. Test in a disposable Home Assistant 2026.10 installation and verify a clean log.
 2. Install as upgrade over original `panel_iframe` with multiple configured entries. Verify title, URL and mode.
 3. Confirm management panel and WebSocket CRUD in browser, including restart and reload persistence.

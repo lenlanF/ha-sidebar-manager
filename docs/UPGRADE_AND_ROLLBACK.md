@@ -1,6 +1,6 @@
 # Upgrade and recovery checklist / 升级与恢复
 
-> **HACS test preview 0.1.0-dev.12, not a stable production release.** Direct installation in an isolated HAOS 2026.10 test instance is available from the default `main` branch. See [HACS 预览安装指南](HACS_PREVIEW.md) before switching an existing original `panel_iframe` HACS repository.
+> **v0.1.0 是首个正式版本，可通过 HACS 安装。** 原版 `panel_iframe` 的 HACS 来源切换和 HAOS 全量恢复仍需要独立验证；升级前务必备份。详见 [正式版安装说明](HACS_INSTALL.md)。
 
 ## 1. What is backward compatible?
 
@@ -59,7 +59,7 @@ Imported snapshots hold the supported visible menu fields only. Unknown legacy m
 
 If the test instance develops a compatibility problem, **restore the full HA backup/snapshot taken in step 2**. This restores both the original integration files and HA configuration together, avoiding mismatched code and ConfigEntries. Merely importing the menu JSON is **not** a software downgrade and cannot restore old Python/JS files or deleted HA data.
 
-Before any future production upgrade, repeat all checks with the intended HA version and establish a verified full-backup rollback route. The repository is available only as a custom-HACS **test preview**; a production-ready stable release has not been declared.
+Before any future production upgrade, repeat all checks with the intended HA version and establish a verified full-backup rollback route. The repository now offers a stable v0.1.0 release, but switching an already HACS-managed original integration and restoring a full HAOS backup have not been comprehensively rehearsed. Use a verified full backup if the field upgrade fails.
 
 ## Additional compatibility notes (v0.1.0-dev.5)
 
