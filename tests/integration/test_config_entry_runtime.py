@@ -291,3 +291,147 @@ async def test_menu_enabled_toggle_controls_native_sidebar_panel(hass):
     await hass.async_block_till_done()
     assert frontend.async_panel_exists(hass, menu.entry_id)
     assert menu.options["enabled"] is True
+
+
+@pytest.mark.asyncio
+async def test_backup_preflight_and_safe_restore_of_legacy_entries(hass, hass_ws_client):
+    """Real WS backup/restore preserves legacy entries, with dry-run and no delete."""
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    manager = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager", data={"manager_only": True},
+        entry_id="manager-backup-test",
+    )
+    legacy = MockConfigEntry(
+        domain=DOMAIN, title="旧菜单",
+        data={"title": "旧菜单", "legacy_extra": "keep"},
+        options={
+            "url": "/config/logs", "mode": "3", "icon": "mdi:file",
+            "require_admin": True, "legacy_setting": "retain",
+        },
+        entry_id="legacy-backup-test",
+    )
+    for entry in (manager, legacy):
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/backup"})
+    response = await ws.receive_json()
+    assert response["success"], response
+    snapshot = response["result"]
+    assert snapshot["format"] == "ha-sidebar-manager"
+    assert snapshot["version"] == 1
+    assert len(snapshot["items"]) == 1
+    assert snapshot["items"][0]["entry_id"] == legacy.entry_id
+    assert snapshot["items"][0]["url"] == "/config/logs"
+    assert "legacy_extra" not in snapshot["items"][0]
+
+    hass.config_entries.async_update_entry(
+        legacy, options={**legacy.options, "url": "/config/integrations"}
+    )
+    await hass.async_block_till_done()
+    assert frontend.async_panel_exists(hass, legacy.entry_id)
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot
+    })
+    preview = await ws.receive_json()
+    assert preview["success"], preview
+    assert preview["result"]["counts"] == {"create": 0, "update": 1, "skip": 0}
+    assert preview["result"]["applied"] is False
+    assert legacy.options["url"] == "/config/integrations"
+
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore",
+        "backup": snapshot, "apply": True,
+    })
+    restored = await ws.receive_json()
+    assert restored["success"], restored
+    assert restored["result"]["applied"] is True
+    await hass.async_block_till_done()
+    assert legacy.options["url"] == "/config/logs"
+    assert legacy.options["legacy_setting"] == "retain"
+    assert legacy.data["legacy_extra"] == "keep"
+    assert frontend.async_panel_exists(hass, legacy.entry_id)
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 2
+
+    # Idempotent re-import does not duplicate a restored menu.
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot,
+    })
+    identical = await ws.receive_json()
+    assert identical["success"], identical
+    assert identical["result"]["counts"] == {"create": 0, "update": 0, "skip": 1}
+
+
+@pytest.mark.asyncio
+async def test_restore_rejects_conflicting_or_malformed_snapshot(hass, hass_ws_client):
+    """Do not mutate any entry if preflight detects a title conflict or bad version."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    bootstrap = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager",
+        data={"manager_only": True}, entry_id="bootstrap-bad-backup",
+    )
+    old = MockConfigEntry(
+        domain=DOMAIN, title="旧菜单",
+        data={"url": "/config/logs", "mode": "3"},
+        entry_id="old-bad-backup",
+    )
+    for entry in (bootstrap, old):
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/backup"})
+    valid = (await ws.receive_json())["result"]
+
+    conflicting = {
+        **valid,
+        "items": [{**valid["items"][0],
+                   "entry_id": "other-instance-id",
+                   "url": "/config/integrations"}],
+    }
+    for bad in ({**valid, "version": 999}, conflicting):
+        await ws.send_json_auto_id({
+            "type": "panel_iframe/manager/restore", "backup": bad,
+            "apply": True,
+        })
+        result = await ws.receive_json()
+        assert result["success"] is False, result
+        assert len(hass.config_entries.async_entries(DOMAIN)) == 2
+        assert old.data["url"] == "/config/logs"
+
+
+@pytest.mark.asyncio
+async def test_non_admin_backup_restore_is_forbidden(hass, hass_ws_client):
+    """Read-only HA users are denied for both export and restore."""
+    from homeassistant.auth.const import GROUP_ID_READ_ONLY
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    manager = MockConfigEntry(
+        domain=DOMAIN, title="HA Sidebar Manager",
+        data={"manager_only": True}, entry_id="bootstrap-nonadmin-backup",
+    )
+    manager.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(manager.entry_id)
+    await hass.async_block_till_done()
+    user = await hass.auth.async_create_user(
+        "backup-readonly", group_ids=[GROUP_ID_READ_ONLY]
+    )
+    refresh = await hass.auth.async_create_refresh_token(
+        user, client_id="https://sidebar-manager.test/"
+    )
+    ws = await hass_ws_client(
+        hass, access_token=hass.auth.async_create_access_token(refresh)
+    )
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/backup"})
+    response = await ws.receive_json()
+    assert not response["success"], response
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore",
+        "backup": {"format": "ha-sidebar-manager", "version": 1, "items": []},
+    })
+    response = await ws.receive_json()
+    assert not response["success"], response
