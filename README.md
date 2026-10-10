@@ -53,3 +53,11 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - HACS 官方结构校验：**8/9 通过**，品牌图标已符合要求，唯一剩余项是仓库 Topics — [HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38040715657)。
 - 仓库所有者可在 GitHub About 中设置 Topics：`home-assistant`、`homeassistant`、`hacs`、`sidebar`、`smart-home`。
 - 上述测试不是 HA 前端浏览器、Android/iOS 或原插件生产升级的验收证据；正式 HACS 版本仍未发布。
+
+## 开发版进展：v0.1.0-dev.2
+
+- 可视化管理器增加菜单 **启用/停用**，不会删除原有配置；旧菜单默认启用。
+- 修复最后一条菜单卸载后的共享管理器残留，以及再次加载时重复注册 WebSocket 命令的风险。
+- 自动化 HA 2026.10 Core 功能测试已扩展到 **7/7 通过**；另外新增了 DOM 模拟交互检查。
+- 验证：[GitHub Actions](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728)。
+- 仍需真实浏览器、移动端、Ingress 和从原插件安装升级的测试；尚不属于可交付的 HACS 发布版。

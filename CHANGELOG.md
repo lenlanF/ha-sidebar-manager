@@ -64,3 +64,11 @@
 - HA 2026.10 functional suite 5/5 passed; HACS validation 8/9 passed (missing repository Topics setting).
 
 **Not released:** browser/mobile and production upgrade validations are still required.
+
+## Unreleased — 0.1.0-dev.2 development branch (2026-10-10)
+
+- Clean up shared manager panel on final config entry unload; re-register panel safely on subsequent setup without duplicating WebSocket commands.
+- Add visual enable/disable menu controls, preserving legacy entries and using native HA reloads.
+- Add visual DOM regressions (create/edit/delete, error recovery, escaping, toggle).
+- Expand functional HA Core tests to 7 passing tests. GitHub Actions run 38041489728.
+- HACS Topics and actual production/browser acceptance remain unresolved; no release created.

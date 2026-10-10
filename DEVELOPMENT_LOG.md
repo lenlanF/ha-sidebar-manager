@@ -96,3 +96,16 @@
 - CI environment corrections: Python 3.14 required, install `home-assistant-frontend==20260930.2`, provide an OAuth client ID for the test read-only user.
 - **Not yet verified:** browser rendering of manager UI, end-to-end HACS install in an actual user HA environment, real backup and rollback over installed upstream HACS integration, mobile Ingress and CSP behavior.
 - No merge to main; no release or deployment.
+
+## 2026-10-10 — Manager lifecycle, toggles and UI DOM regression (v0.1.0-dev.2)
+
+- Reviewed repository docs and all major menu modules before modification.
+- Fixed shared manager panel lifecycle: unload removes each entry panel, and after the final loaded entry unregisters the shared manager panel while keeping WebSocket commands registered exactly once for future setup.
+- Added HA Core regression for multiple entries, last-entry unload and subsequent manager re-setup.
+- Added an `enabled` menu option (defaults to true for existing `panel_iframe` entries): supports toggling from the manager list and native HA config/options form without deleting the underlying entry.
+- Menu registration now respects `enabled=False`, and update listeners reload panel registrations accordingly.
+- Added DOM tests with jsdom for creating/editing/deleting, save-failure draft retention, HTML escaping and enable/disable controls. These are simulated DOM checks, **not** complete HA browser UI tests.
+- Automated check evidence: [GitHub Actions run 38041489728](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728): `syntax-and-tests` success, `homeassistant-api-smoke` success, `homeassistant-functional-tests` success; functional suite **7/7 passed**.
+- HACS structural check remains 8/9 until repository Topics are added. The connected GitHub tool has repository file write access but does not expose a Topics update method.
+- Not verified: production upgrade and rollback; native HACS install lifecycle; desktop/mobile browser rendering and iframe/Ingress compatibility.
+- Version advanced to `0.1.0-dev.2` for the **unreleased development branch** only. Main and releases remain unchanged.

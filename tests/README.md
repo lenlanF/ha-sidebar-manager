@@ -12,3 +12,7 @@
 - Upgrade-over-legacy and rollback testing.
 
 Isolated tests are deliberately not labeled as full integration tests.
+
+- Added a seventh real Core functional test for enabled/disabled sidebar registration and manager lifecycle after final entry unload.
+- Added jsdom-based manager UI create/edit/delete/toggle/error-handling checks. This is a simulated DOM test, not HA browser acceptance.
+- Evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38041489728 (7 functional tests passed).
