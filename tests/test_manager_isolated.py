@@ -188,3 +188,19 @@ def test_reorder_persists_manager_order():
     assert conn.result == {"saved": True}
     assert entries.items[1].options["menu_order"] == 0
     assert entries.items[0].options["menu_order"] == 1
+
+
+def test_manager_bootstrap_entry_is_not_a_menu():
+    ns = manager()
+    entries = Entries([
+        Entry("manager", "HA Sidebar Manager", {"manager_only": True}),
+        Entry("legacy", "旧菜单", {"url": "/config/integrations"}),
+    ])
+    hass = SimpleNamespace(config_entries=entries)
+    conn = Conn()
+    ns["ws_list"](hass, conn, {"id": 1})
+    assert [x["entry_id"] for x in conn.result] == ["legacy"]
+    conn = Conn()
+    asyncio.run(ns["ws_delete"](hass, conn, {"id": 2, "entry_id": "manager"}))
+    assert conn.error[0] == "not_found"
+    assert entries.deleted == []
