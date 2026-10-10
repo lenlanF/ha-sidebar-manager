@@ -170,3 +170,17 @@
 - Official HACS validator: **9/9 passed** on the same source commit, [run](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745).
 - **Boundary:** this is an isolated two-Python-process HA Core store cold-load test with a serialized on-disk artifact. It does **not** launch the full HA service in separate OS processes, does not replace an actually installed upstream HACS repository, and does not verify a HA Supervisor backup/restore. Keep original-upstream HACS source swap, full service reboot and production rollback on the release blocker list.
 - No code merge into main, no HACS release, no production change.
+
+## 2026-10-10 — Pinned upstream source upgrade and rollback rehearsal (v0.1.0-dev.7)
+
+- Started from DEVELOPMENT_LOG.md / manifest version / CHANGELOG.md and reviewed the actual upstream repository commit `90c849d34b3ebb749c5f62a3e206e62888e4c050` (manifest version `2026.4.13`).
+- Upgraded `tests/integration/conftest.py` to install either the fork checkout or a pinned independent upstream checkout into a **disposable HA test config**. No user/production HA environment was modified.
+- Added `tests/integration/test_upstream_source_swap.py` and dedicated `pinned-upstream-source-upgrade` GitHub Actions job. GitHub runner fetches upstream at the **exact commit** and verifies its manifest.
+- **Process A (upstream source):** executes original ConfigFlow to create a real legacy ConfigEntry. To avoid original deprecated hot-reload path, unloads the old entry then saves upstream-shaped `options` via HA's native ConfigEntry API. It does **not** claim to exercise the original OptionsFlow UI. Persists the HA native ConfigEntry storage envelope into a disposable file.
+- **Process B (fork source):** creates a fresh HA native ConfigEntries manager in another process, loads upstream-generated storage, verifies unchanged entry ID, title, URL, icon, admin restriction and proxy setting, and confirms both the original item panel and new admin management panel register.
+- **Process C (upstream source rollback rehearsal):** uses original source again with the **pre-upgrade** ConfigEntry storage envelope in another process. Verifies the original panel reappears and the new management panel is absent.
+- First attempt had an overly invasive original integration update-listener path and ran unusually long. Revised the harness to unload the original entry before recording legacy options and added a 120-second bound to each subprocess to prevent hangs. All three phases then passed.
+- **Passing CI evidence:** [source run](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508) on commit `36fc840de`: three upgrade/rollback phases each **1 passed, 2 phase-skipped**, the regular HA 2026.10 Core suite **19 passed** (5 phase tests skipped in its unscoped run), native store cross-process, Chromium desktop/mobile, source/isolated and HA API jobs all passed.
+- **HACS validator:** [run](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571332) success (9/9).
+- **Precise limitation:** verified original-source ConfigFlow + source replacement + native ConfigEntry storage + original-source restoration in distinct pytest/Python processes. Did **not** run a real HACS repository transfer, a complete HA service process startup/shutdown, or Supervisor full-backup recovery. Old proxy features remain intentionally disabled in fork. Avoid production upgrade until those remaining release gates are tested.
+- No main merge, GitHub Release, or production deployment.

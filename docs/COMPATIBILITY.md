@@ -61,3 +61,9 @@ Legacy HTTP proxy behavior is intentionally **disabled** and will not be restore
 This verifies entry IDs, titles, legacy options, manager-only entry, blank-URL entries and enabled/disabled behavior with frontend registration. Verified by CI run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697 (both process stages passed; functional HA 19 passed), with HACS 9/9 in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745.
 
 This deliberately does not claim complete HA service shutdown/startup in distinct processes, an actual HACS repository swap, or whole-server restore. These remain pre-release blockers.
+
+## v0.1.0-dev.7 — pinned upstream source-swap exercise
+
+CI downloads `shaonianzhentan/panel_iframe@90c849d34b3ebb749c5f62a3e206e62888e4c050` (v2026.4.13). Separate pytest/Python processes exercise authentic original ConfigFlow, HA native options persistence, a cold load into the fork, and a return to original files with the original ConfigEntry store. Three phases passed: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508. This is substantially more grounded than a hand-authored legacy fixture.
+
+**Not exercised**: original OptionsFlow's obsolete reload/UI path, actual HACS repository installation metadata, full HA service subprocess lifecycles, networked live-HA frontend and full Supervisor backup restore. Do not represent a source-copy test as a production HACS migration.

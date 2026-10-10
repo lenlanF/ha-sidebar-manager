@@ -29,3 +29,5 @@ Isolated tests are deliberately not labeled as full integration tests.
 - HACS 9/9: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38053139396. Browser/UI backend is still simulated; live HA process restart and original HACS upgrade remain unchecked.
 
 - v0.1.0-dev.6: `cross-process-config-reload` runs two distinct pytest invocations with a serialized native HA storage envelope in the runner's temporary directory; write/read each pass with the other phase skipped. Source checks run https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697. This is not a full HA Supervisor restart.
+
+- v0.1.0-dev.7: pinned upstream source swap and rollback (`tests/integration/test_upstream_source_swap.py`) in three independent Python processes: original ConfigFlow/save, fork cold load, original-source rollback. All 3 phase tests passed in https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508. Uses genuine upstream commit 90c849d; old options are written via native HA API after old entry unload, not old OptionsFlow UI.

@@ -111,3 +111,10 @@
 - CI includes dedicated cross-process storage check, all existing HA Core functional and Chromium UI checks; full source run 38054007697 succeeded.
 - Official HACS validation 9/9 succeeded on source commit a574f6652.
 - Full independent HA service restart and HACS upstream repo replacement remain untested; not released.
+
+## Unreleased — 0.1.0-dev.7 (2026-10-10)
+
+- Add source-swap migration rehearsal using the actual upstream panel_iframe 2026.4.13 Git commit, followed by fork loading and original-source rollback.
+- Exercise all three phases in independent Python processes using Home Assistant's native ConfigEntry storage and original ConfigFlow.
+- Document the upstream deprecated hot-reload caveat and test-harness timeout; do not claim full HACS migration or HA service restart.
+- Automated checks passed: three pinned upgrade/rollback phases, 19 HA Core tests, Chromium UI, source/API tests, HACS validator 9/9 (run 38057571508 / 38057571332).

@@ -103,3 +103,12 @@ MIT. 原项目版权归 shaonianzhentan 所有，并保留在 [LICENSE](LICENSE)
 - 已验证旧菜单 ID、名称、URL、未知历史字段、未配置菜单、启用/停用状态在这种冷加载测试中保持正确。
 - 最新证据：[跨进程及 HA Core 测试](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007697)（保存进程和读取进程各 1 项通过；19 项常规 HA Core 功能测试通过），[HACS 官方 9/9 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38054007745)。
 - **重要边界**：测试使用独立 Python 进程和 HA Core Store 加载器，但未启动两次完整 HA 服务，也未在 HACS 中原地替换已安装的原插件。正式安装与整机备份回退仍须在隔离 HA 实例中验证。
+
+## 开发版 v0.1.0-dev.7：原版源码升级与回退演练
+
+本轮不再只用模拟旧菜单。GitHub Actions 会从原作者仓库检出 **2026.4.13 固定提交**，用原版 ConfigFlow 建立菜单，经过 HA 原生配置存储后在另一 Python 进程切换到本项目源码加载；随后再切回原版源码和升级前配置快照，验证原菜单能够恢复。
+
+- **三阶段分别通过**：原版创建/保存 → 新版读取并显示 → 原版源码及配置恢复。
+- 保存菜单的 URL 等旧版 OptionsFlow 字段时使用 HA 原生 ConfigEntry API，避开原版已过时的热重载逻辑；**未模拟原版 OptionsFlow UI 成功**。
+- 相关测试与常规 19 项 HA Core 功能测试、Chromium 桌面/手机检查全部通过：[完整 CI](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508)；[HACS 校验](https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571332)。
+- **尚不等于实际 HACS 仓库来源切换、HA 完整进程重启或 Supervisor 完整备份回退**。继续限制在开发分支，不能据此建议直接覆盖生产插件。

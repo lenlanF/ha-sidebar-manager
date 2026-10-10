@@ -70,3 +70,9 @@ When editing an old entry through the native Home Assistant options screen, unkn
 ## Persistence verification status (v0.1.0-dev.6)
 
 The development CI now performs two independent Python-process passes over a native HA Core ConfigEntry storage envelope; legacy IDs and options survive a cold load. This improves confidence in storage compatibility, but **is not an in-place HACS upgrade test or a full Home Assistant restart**. Follow the complete backup and disposable-instance migration procedure above before any production installation.
+
+## Source replacement and return-to-original rehearsal (v0.1.0-dev.7)
+
+An isolated CI job now checks out the genuine upstream v2026.4.13 at pinned Git SHA and tests three independent Python-process stages: original ConfigFlow and native storage, fork source with old ConfigEntry cold load, and restoration of the original source plus the pre-upgrade storage snapshot. Evidence: https://github.com/lenlanF/ha-sidebar-manager/actions/runs/38057571508. The original OptionsFlow is **not** tested end to end; legacy settings are recorded through the HA native ConfigEntry API after unloading the original entry to avoid a deprecated hot-reload path.
+
+This validates the **integration source + menu configuration compatibility boundary only**. It does not modify HACS's installed-repository metadata and is not a full Home Assistant backup or service restart. Production source migration must still be tried on a disposable full-HA installation and verified through a real HA backup/restore cycle.
