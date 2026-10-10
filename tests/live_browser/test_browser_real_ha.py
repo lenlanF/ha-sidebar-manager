@@ -26,7 +26,12 @@ async ({token}) => {
     accept = resolve;
     rejectReady = reject;
   });
-  socket.addEventListener("error", () => rejectReady(new Error("HA WebSocket failed")));
+  socket.addEventListener("error", () => rejectReady(
+    new Error("HA WebSocket failed on "+ socket.url + ", readyState=" + socket.readyState)
+  ));
+  socket.addEventListener("close", (event) => {
+    rejectReady(new Error("HA WebSocket closed, code=" + event.code));
+  });
   socket.addEventListener("message", (event) => {
     const response = JSON.parse(event.data);
     if (response.type === "auth_required") {
@@ -87,6 +92,10 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
     response = await client.get("/panel_iframe_www/manager.js")
     assert response.status == 200
     assert "ha-sidebar-manager-panel" in await response.text()
+    # Verify the exact same aiohttp test server can handle a real WS upgrade.
+    async with client.ws_connect("/api/websocket") as upstream_socket:
+        hello = await upstream_socket.receive_json()
+        assert hello["type"] == "auth_required", hello
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(
@@ -96,6 +105,9 @@ async def test_actual_ha_websocket_with_chromium_manager_ui(
             viewport={"width": width, "height": height}
         )
         page = await context.new_page()
+        page.on("console", lambda msg: print("BROWSER_CONSOLE", msg.type, msg.text))
+        page.on("requestfailed", lambda req: print("BROWSER_REQUEST_FAILED", req.url, req.failure))
+        page.on("websocket", lambda ws: print("BROWSER_WS_URL", ws.url))
         try:
             # Serve only a minimal UTF-8 HTML HOST via Playwright. The JS
             # resource and WebSocket still come from the real HA server.
