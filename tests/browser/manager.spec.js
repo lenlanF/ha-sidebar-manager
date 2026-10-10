@@ -65,7 +65,7 @@ for(const device of [
       await expect(manager.locator(".entry strong")).toHaveText("自动化管理");
 
       await manager.getByRole("button",{name:"停用"}).click();
-      await expect(manager.getByText("已停用",{exact:false})).toBeVisible();
+      await expect(manager.locator(".entry .badge")).toContainText("已停用");
       await manager.getByRole("button",{name:"启用"}).click();
       await expect(manager.getByRole("button",{name:"停用"})).toBeVisible();
 
