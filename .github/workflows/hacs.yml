@@ -1,0 +1,17 @@
+name: HACS repository validation
+on:
+  push:
+    branches: [main, dev/compat-foundation]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hacs-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate repository as a HACS integration
+        uses: hacs/action@main
+        with:
+          category: integration
