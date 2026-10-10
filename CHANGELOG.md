@@ -18,3 +18,11 @@
 - Added pre-release manifest and compatibility checklist.
 
 **Not released:** work remains on the development branch; no Home Assistant runtime verification.
+
+
+## Unreleased — flow and routing fixes (2026-10-10)
+
+- New-entry UI now accepts the URL, icon, mode and administrator restriction in addition to title.
+- Load legacy entry settings from the combined entry data/options map.
+- Guard internal navigation during component updates rather than rendering.
+- Add unexecuted validation regression tests.
