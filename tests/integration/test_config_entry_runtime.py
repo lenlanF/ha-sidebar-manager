@@ -686,6 +686,7 @@ async def test_upstream_options_flow_can_edit_old_entry(hass):
     assert entry.options["url"] == "/config/integrations"
     assert entry.options["proxy_access"] is False
     assert entry.data["old_data"] == "preserved"
+    assert entry.options["old_option"] == "preserved"
 
 
 @pytest.mark.asyncio
