@@ -139,3 +139,11 @@
 - Fix isolated HA fixture onboarding initialization to prevent redirecting the browser to the first-run welcome screen.
 - Verified **6/6 actual HA HTTP/WebSocket Chromium tests**, 19 HA Core functional tests, all 7 source CI jobs, and HACS repository validation 9/9.
 - Remaining release gates: HACS-installed source migration, HAOS/Supervisor restart + backup restore, physical mobile and Ingress/CSP; no release.
+
+## Unreleased — 0.1.0-dev.11 (2026-10-11)
+
+- Add accessible open-in-new-window fallback for iframe embedded and full-screen modes, anchored to the panel with secure link attributes.
+- Cover allowed iframe, X-Frame-Options DENY, and CSP frame-ancestors none browser behavior in real Chromium; keep mixed-content restrictions.
+- Test navigation from a real authenticated HA panel to its internal integrations page, including HA's canonical /config/integrations/dashboard route.
+- Source CI passed: 12/12 real HA/Chromium, 19 HA Core functional tests and all 7 jobs (run 38069857572); HACS validator 9/9 (run 38069857573).
+- HAOS/Supervisor Ingress and installed-HACS migration remain unverified; not released.
