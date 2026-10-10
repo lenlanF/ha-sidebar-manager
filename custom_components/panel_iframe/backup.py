@@ -64,7 +64,7 @@ def prepare_restore(
     if backup.get("format") != BACKUP_FORMAT or backup.get("version") != BACKUP_VERSION:
         raise BackupValidationError("unsupported_format_or_version")
     items = backup.get("items")
-    if not isinstance(items, list) or not 1 <= len(items) <= MAX_ITEMS:
+    if not isinstance(items, list) or not 0 <= len(items) <= MAX_ITEMS:
         raise BackupValidationError("invalid_item_count")
 
     current_by_id = {x["entry_id"]: x for x in existing}
