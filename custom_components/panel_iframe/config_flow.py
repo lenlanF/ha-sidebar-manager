@@ -102,6 +102,8 @@ class SidebarConfigFlow(ConfigFlow, domain=DOMAIN):
 
 class SidebarOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        if self.config_entry.data.get("manager_only"):
+            return self.async_abort(reason="manage_in_sidebar")
         if user_input is not None:
             values, errors = _validate(user_input)
             if not errors:
