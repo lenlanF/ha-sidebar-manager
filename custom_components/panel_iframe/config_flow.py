@@ -56,6 +56,31 @@ class SidebarConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        """Install the manager, or create a sidebar item with the native flow."""
+        if user_input is not None:
+            # WebSocket-created entries pass fields directly to the user step.
+            if "url" in user_input:
+                return await self.async_step_item(user_input)
+            if user_input.get("setup_type") == "item":
+                return await self.async_step_item()
+            if user_input.get("setup_type") == "manager":
+                if any(e.data.get("manager_only") for e in self._async_current_entries()):
+                    return self.async_abort(reason="already_configured")
+                return self.async_create_entry(
+                    title="HA Sidebar Manager", data={"manager_only": True}
+                )
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required("setup_type", default="manager"): vol.In({
+                    "manager": "安装侧边栏管理器",
+                    "item": "创建单个侧边栏入口",
+                })
+            }),
+        )
+
+    async def async_step_item(self, user_input: dict[str, Any] | None = None):
+        """Preserve the legacy one-entry-per-menu format."""
         if user_input is not None:
             values, errors = _validate(user_input)
             if not errors:
@@ -64,7 +89,7 @@ class SidebarConfigFlow(ConfigFlow, domain=DOMAIN):
         else:
             errors = {}
         return self.async_show_form(
-            step_id="user",
+            step_id="item",
             data_schema=_fields(user_input or {}, include_title=True),
             errors=errors,
         )
