@@ -545,3 +545,112 @@ async def test_backup_preserves_distinct_legacy_entries_sharing_same_title(hass,
         "duplicate-name-b": "/config/integrations",
     }
     assert len(hass.config_entries.async_entries(DOMAIN)) == 2
+
+
+@pytest.mark.asyncio
+async def test_real_upstream_entry_layout_survives_plugin_upgrade(hass, hass_ws_client):
+    """Load a fixture shaped exactly like upstream 2026.4.13 config-flow records.
+
+    This exercises the NEW code against representative OLD entries without
+    claiming a HACS-managed source replacement has occurred.
+    """
+    import json
+    from pathlib import Path
+    from homeassistant.components import frontend
+
+    assert await setup.async_setup_component(hass, "frontend", {})
+    fixture = Path(__file__).resolve().parents[1] / "fixtures" / "upstream_2026_4_13.json"
+    records = json.loads(fixture.read_text(encoding="utf-8"))["entries"]
+    originals = {}
+    for record in records:
+        entry = MockConfigEntry(
+            domain=DOMAIN, title=record["title"], data=record["data"],
+            options=record["options"], entry_id=record["entry_id"],
+        )
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        originals[entry.entry_id] = entry
+    await hass.async_block_till_done()
+
+    assert frontend.async_panel_exists(hass, "ha-sidebar-manager")
+    for record in records:
+        assert originals[record["entry_id"]].data == record["data"]
+        assert originals[record["entry_id"]].options == record["options"]
+        assert frontend.async_panel_exists(
+            hass, record["entry_id"]
+        ) == bool(record["options"].get("url"))
+
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": "panel_iframe/manager/list"})
+    response = await ws.receive_json()
+    assert response["success"], response
+    items = {x["entry_id"]: x for x in response["result"]}
+    assert len(items) == 4
+    assert items["old-internal"]["mode"] == "3"
+    assert items["old-external"]["url"] == "https://example.org/status"
+    assert items["old-external"]["enabled"] is True
+    assert items["old-unconfigured"]["configured"] is False
+    assert originals["old-external"].options["proxy_access"] is True
+
+    # A new management edit intentionally disables historical unsafe proxying
+    # but retains unknown legacy metadata and all other entries.
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/save", "entry_id": "old-external",
+        "title": "旧设备", "url": "https://example.org/status",
+        "icon": "mdi:devices", "mode": "0",
+        "require_admin": False, "enabled": True,
+    })
+    saved = await ws.receive_json()
+    assert saved["success"], saved
+    await hass.async_block_till_done()
+    assert originals["old-external"].options["proxy_access"] is False
+    assert originals["old-internal"].entry_id == "old-internal"
+    assert frontend.async_panel_exists(hass, "old-internal")
+
+
+@pytest.mark.asyncio
+async def test_cross_instance_same_url_restores_different_icon_permissions(hass, hass_ws_client):
+    """A title+URL match must update settings instead of silently skipping."""
+    assert await setup.async_setup_component(hass, "frontend", {})
+    menu = MockConfigEntry(
+        domain=DOMAIN, title="状态页",
+        data={"title": "状态页"},
+        options={
+            "url": "/config/logs", "mode": "3", "icon": "mdi:wrong",
+            "require_admin": False, "enabled": False, "menu_order": 90,
+            "old_extra": "keep",
+        },
+        entry_id="local-side-id",
+    )
+    menu.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(menu.entry_id)
+    ws = await hass_ws_client(hass)
+    snapshot = {
+        "format": "ha-sidebar-manager", "version": 1,
+        "exported_at": "2026-10-10T00:00:00+00:00",
+        "items": [{
+            "entry_id": "foreign-other-instance-id",
+            "title": "状态页", "url": "/config/logs",
+            "mode": "3", "icon": "mdi:file-chart",
+            "require_admin": True, "enabled": True, "menu_order": 2,
+        }],
+    }
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot,
+    })
+    preview = await ws.receive_json()
+    assert preview["success"], preview
+    assert preview["result"]["counts"] == {"create": 0, "update": 1, "skip": 0}
+    await ws.send_json_auto_id({
+        "type": "panel_iframe/manager/restore", "backup": snapshot,
+        "apply": True,
+    })
+    applied = await ws.receive_json()
+    assert applied["success"] and applied["result"]["applied"], applied
+    await hass.async_block_till_done()
+    assert menu.entry_id == "local-side-id"
+    assert menu.options["icon"] == "mdi:file-chart"
+    assert menu.options["require_admin"] is True
+    assert menu.options["enabled"] is True
+    assert menu.options["menu_order"] == 2
+    assert menu.options["old_extra"] == "keep"
